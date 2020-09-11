@@ -94,6 +94,8 @@ static Token errorToken(const char * errorMessage)
 	token.start = errorMessage;
 	token.length = (int)strlen(errorMessage);
 	token.line = scanner.line;
+
+	return token;
 }
 
 /* Consumes chars until it encounters a non whitespace char */

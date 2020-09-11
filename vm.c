@@ -6,8 +6,6 @@
 #include "vm.h"
 #include "debug.h"
 
-#define MT_DEBUG_TRACE_EXEC // if on will print stuff for 'pro' users
-
 /* Maybe take a pointer later to remove the global variable */
 VM vm;
 
