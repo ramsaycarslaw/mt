@@ -1,5 +1,7 @@
 #+TITLE: Notes Around MT
 
+* Todo
+** TODO remove Global Variable for the vm in [[file:vm.c][VM code]] 
 * Reallocate
 
 | oldSize  | newSize  | Operation                  |
