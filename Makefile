@@ -15,6 +15,6 @@ $(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm src/*.o $(EXEC)
+	rm *.o $(EXEC)
 
 
