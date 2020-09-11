@@ -7,8 +7,14 @@
 /* All possible types of opcode */
 typedef enum
 {
-	OP_CONSTANT,
-	OP_RETURN,
+	OP_CONSTANT, // a number
+	OP_NEGATE,   // -number
+	OP_ADD,      // +
+	OP_SUBTRACT, // -
+	OP_MULTIPLY, // *
+	OP_DIVIDE,   // /
+	OP_POW,      // ^
+	OP_RETURN,   // return
 } OpCode;
 
 /* Byte code chunk definition: wrapper for dynamic array */
