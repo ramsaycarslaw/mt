@@ -6,11 +6,11 @@
 
 ### macOS
 Make sure you have the XCode command line tools installed
-'''
+```
 git clone https://github.com/ramsaycarslaw/mt.git
 cd mt
 make
-'''
+```
 
 ### GNU/Linux
 Requires a small modification to the Makefile as well as having gcc and make installed. In the Makefile: change 
