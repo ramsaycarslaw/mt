@@ -1,0 +1,12 @@
+#+TITLE: Notes Around MT
+
+* Reallocate
+
+| oldSize  | newSize  | Operation                  |
+|----------+----------+----------------------------|
+| 0        | Non-zero | Allocate new block         |
+| Non-Zero | 0        | Free Allocation            |
+| Non-Zero | <oldSize | Shrink existing allocation |
+| Non-Zero | >oldSize | Grow existing allocation   |
+|----------+----------+----------------------------|
+
