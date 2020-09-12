@@ -7,11 +7,14 @@
 #include "debug.h"
 #include "vm.h"
 
+#define MT_VERSION "0.1.1"
+
 static void repl() {
 	char line[1024];
+	printf("mt version %s shell\n", MT_VERSION);
 	for (;;)
 	{
-		printf("> ");
+		printf("mt> ");
 		
 		if (!fgets(line, sizeof(line), stdin))
 		{

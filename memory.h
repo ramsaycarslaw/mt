@@ -5,6 +5,9 @@
 
 #include "common.h"
 
+#define ALLOCATE(type, count) \
+    (type*)reallocate(NULL, 0, sizeof(type) * (count))
+
 /* Calculate the new capacity based on the current capacity using
 new = old * 2 */
 #define GROW_CAPACITY(capacity) \
