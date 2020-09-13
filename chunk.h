@@ -11,10 +11,13 @@ typedef enum
 	OP_NIL,
 	OP_TRUE,
 	OP_FALSE,
+	OP_POP,      // used for expressions
+	OP_DEFINE_GLOBAL,
 	OP_EQUAL,
 	OP_GREATER,
 	OP_LESS,
 	OP_NEGATE,   // -number
+	OP_PRINT,
 	OP_ADD,      // +
 	OP_SUBTRACT, // -
 	OP_MULTIPLY, // *

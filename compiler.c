@@ -119,6 +119,18 @@ static void consume(TokenType type, const char * message)
 	errorAtCurrent(message);
 }
 
+static bool check(TokenType type)
+{
+	return parser.current.type == type;
+}
+
+static bool match(TokenType type)
+{
+	if (!check(type)) return false;
+	advance();
+	return true;
+}
+
 /* Append a single byte to be translated to bytecode */
 static void emitByte(uint8_t byte)
 {
@@ -171,6 +183,8 @@ static void endCompiler()
 
 /* Prototype functions */
 static void expression();
+static void statement();
+static void declaration();
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
@@ -319,6 +333,24 @@ static void parsePrecedence(Precedence precedence)
 	}
 }
 
+/* Parse identifier token */
+static uint8_t identifierConstant(Token* name)
+{
+	return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+}
+
+/* Parser variable declare to get name */
+static uint8_t parseVariable(const char * errorMessage)
+{
+	consume(TOKEN_IDENTIFIER, errorMessage);
+	return identifierConstant(&parser.previous);
+}
+
+static void defineVariable(uint8_t global)
+{
+	emitBytes(OP_DEFINE_GLOBAL, global);
+}
+
 /* get method for the parse table */
 static ParseRule* getRule(TokenType type)
 {
@@ -330,6 +362,94 @@ static void expression()
 	parsePrecedence(PREC_ASSIGNMENT);
 }
 
+/* Compile a var declaration */
+static void varDeclaration()
+{
+	uint8_t global = parseVariable("Expected variable name.");
+
+	if (match(TOKEN_EQUAL))
+	{
+		expression();
+	}
+	else
+	{
+		emitByte(OP_NIL); // variables are nil by default
+	}
+	consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
+
+	defineVariable(global);
+}
+
+/* Compiles an expression statement */
+static void expressionStatement()
+{
+	expression();
+	consume(TOKEN_SEMICOLON, "Expected ';' after expression");
+	emitByte(OP_POP);
+}
+
+/* Compiles a print statement */
+static void printStatement()
+{
+	expression();
+	consume(TOKEN_SEMICOLON, "Expected ';' after value.");
+	emitByte(OP_PRINT);
+}
+
+/* Basic error recovery */
+static void synchronize()
+{
+	parser.panicMode = 0;
+
+	while (parser.current.type != TOKEN_EOF)
+	{
+		if (parser.previous.type == TOKEN_SEMICOLON) return;
+
+		switch (parser.current.type)
+		{
+		case TOKEN_CLASS:
+		case TOKEN_FUN:
+		case TOKEN_VAR:
+		case TOKEN_FOR:
+		case TOKEN_IF:
+		case TOKEN_WHILE:
+		case TOKEN_PRINT:
+		case TOKEN_RETURN:
+			return;
+		 default:
+			 // do nothing
+			 ;
+		}
+		advance();
+	}
+}
+
+static void declaration()
+{
+	if (match(TOKEN_VAR))
+	{
+		varDeclaration();
+	}
+	else
+	{
+		statement();
+	}
+
+	if (parser.panicMode) synchronize();
+}
+
+static void statement()
+{
+	if (match(TOKEN_PRINT))
+	{
+		printStatement();
+	}
+	else
+	{
+		expressionStatement();
+	}
+}
+
 int compile(const char *src, Chunk *chunk)
 {
 	initScanner(src);
@@ -339,8 +459,12 @@ int compile(const char *src, Chunk *chunk)
 	parser.panicMode = 0;
 	
 	advance();
-	expression();
-	consume(TOKEN_EOF, "Expected expression.");
+
+	while (!match(TOKEN_EOF))
+	{
+		declaration();
+	}
+	
 	endCompiler();
 	return !parser.hadError;
 }

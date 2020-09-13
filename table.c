@@ -77,7 +77,7 @@ static void adjustCapacity(Table* table, int capacity)
 		entries[i].value = NIL_VAL;
 	}
 
-	table->count = 0
+	table->count = 0;
 	for (int i = 0; i < table->capacity; i++)
 	{
 		Entry* entry = &table->entries[i];
