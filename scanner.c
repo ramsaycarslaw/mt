@@ -258,6 +258,18 @@ Token scanToken()
 		return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
 	case '>':
 		return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+	case '|':
+		if (!match('|'))
+		{
+			return errorToken("Unexpexted character after |");
+		}
+		return makeToken(TOKEN_OR);
+	case '&':
+		if (!match('&'))
+		{
+			return errorToken("Unexpexted character after |");
+		}
+		return makeToken(TOKEN_AND);
 	        // literals
 	case '"': return string();
 	}

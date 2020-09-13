@@ -4,9 +4,12 @@
 /* Handles most memory processes for the mt Virtual Machine */
 
 #include "common.h"
+#include "object.h"
 
 #define ALLOCATE(type, count) \
     (type*)reallocate(NULL, 0, sizeof(type) * (count))
+
+#define FREE(type, pointer) reallocate(pointer, sizeof(type), 0)
 
 /* Calculate the new capacity based on the current capacity using
 new = old * 2 */
@@ -25,5 +28,6 @@ new = old * 2 */
 
 /* Plysically reallocate the memory */
 void* reallocate(void* pointer, size_t oldSize, size_t newSize);
+void freeObjects();
 
 #endif

@@ -13,7 +13,7 @@ make
 ```
 
 ### GNU/Linux
-Requires a small modification to the Makefile as well as having gcc and make installed. In the Makefile: change 
+equires a small modification to the Makefile as well as having gcc and make installed. In the Makefile: change 
 ```
 CC = clang
 ```
@@ -41,8 +41,18 @@ Or pass in a file with:
 ```
 
 ## mt supported commands
-Currently, only *,+,/,- and brackets are supported, example:
-```
-(1 + 2 - (10 / 3))
-```
 
+| Operator/Keyword | Effect                                      |
+| :----------------| -------------------------------------------:|
+| +                | Adds two numbers or concatanates two strings|
+| -                | subtracts two numbers or negates one        |
+| *                | Multiplies two numbers                      |
+| /                | Divides two numbers                         |
+| ^                | raises the 1st num to the power of the  2nd |
+| !                | Not, !true = false etc                      |
+| ==               | is equal to                                 |
+| !=               | Not equal to                                |
+| <=               | less than or equal to                       |
+| >=               | greater than equal to                       |
+| <                | less than                                   |
+| >                | greater than                                |
