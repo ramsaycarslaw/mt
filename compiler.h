@@ -3,6 +3,6 @@
 
 #include "vm.h"
 
-int compile(const char * src, Chunk *chunk);
+ObjFunction* compile(const char * src);
 
 #endif

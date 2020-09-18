@@ -8,4 +8,6 @@
 // #define MT_DEBUG_PRINT_CODE // print return chunks
 // #define MT_DEBUG_TRACE_EXEC // if on will print stuff for 'pro' users
 
+#define UINT8_COUNT (UINT8_MAX + 1)
+
 #endif

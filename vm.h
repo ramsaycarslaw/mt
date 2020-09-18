@@ -3,16 +3,27 @@
 
 #include "chunk.h"
 #include "value.h"
+#include "object.h"
 #include "table.h"
 
-#define STACK_MAX 256 // could lead to a stack overflow
+#define FRAMES_MAX 64
+#define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
+
+/* Manages call frames/stack for the VM */
+typedef struct 
+{
+    ObjFunction* function;
+    uint8_t* ip;
+    Value* slots;
+} CallFrame;
 
 /* Executes chunks */
 
 /* Manage state of VM */
 typedef struct {
-	Chunk *chunk;
-	uint8_t *ip; // instruction pointer
+    CallFrame frames[FRAMES_MAX];
+    int frameCount;
+
 	Value stack[STACK_MAX];
 	Value *stackTop;
 	Table globals;
