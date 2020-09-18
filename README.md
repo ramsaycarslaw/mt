@@ -56,3 +56,25 @@ Or pass in a file with:
 | >=               | greater than equal to                       |
 | <                | less than                                   |
 | >                | greater than                                |
+
+## Examples
+
+### 1. Ackerman's function
+```
+  1 fn ack(m, n)                                                                    
+  2 {                                                                               
+  3     if (m == 0)                                                                 
+  4     {                                                                           
+  5         return n+1;                                                             
+  6     }                                                                           
+  7     else if (n == 0)                                                            
+  8     {                                                                           
+  9         return ack(m-1, 1);                                                     
+ 10     }                                                                           
+ 11                                                                                 
+ 12     return ack(m-1, ack(m, n - 1));                                             
+ 13 }                                                                               
+ 14                                                                                 
+ 15 print ack(3, 1);                                                                
+                     
+```
