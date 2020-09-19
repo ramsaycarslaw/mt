@@ -5,6 +5,7 @@ SRC = $(wildcard ./*.c)
 HDR = $(wildcard ./*.h)
 OBJ = $(SRC:.c=.o)
 EXEC = mt
+PREFIX = /usr/local
 
 all: $(SRC) $(OBJ) $(EXEC)
 
@@ -13,6 +14,15 @@ $(EXEC): $(OBJ)
 
 %.o: %.c $(HDR)
 	$(CC) $(CFLAGS) $< -o $@
+
+.PHONY: install
+install: $(EXEC)
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp $< $(DESTDIR)$(PREFIX)/bin/mt
+
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/mt
 
 clean:
 	rm *.o $(EXEC)

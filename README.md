@@ -10,6 +10,7 @@ Make sure you have the XCode command line tools installed
 git clone https://github.com/ramsaycarslaw/mt.git
 cd mt
 make
+make install
 ```
 
 ### GNU/Linux
@@ -26,6 +27,14 @@ And then finally:
 git clone https://github.com/ramsaycarslaw/mt.git
 cd mt
 make
+make install
+```
+
+## Uninstall
+
+To uninstall mt, navigate the the directory with the makefile and run:
+```
+make uninstall
 ```
 
 ## Usage
@@ -135,7 +144,6 @@ for (var i = 0; i < 10; i = i + 1)
     print i;
 }
 ```
-
 ### 10. functions
 Functions are most similar to python in thier declaration
 ```
@@ -148,6 +156,11 @@ fn fib(n)
     return fib(n-1) + fib(n-2);
 }
 ```
+
+## Advanced Examples
+
+### FizzBuzz
+
 
 ### Reference
 
