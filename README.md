@@ -151,7 +151,9 @@ fn fib(n)
 
 ### Reference
 
-| Operator/Keyword | Effect                                      |
+#### Operators
+
+| Operator         | Effect                                      |
 | :----------------| -------------------------------------------:|
 | +                | Adds two numbers or concatanates two strings|
 | -                | subtracts two numbers or negates one        |
@@ -165,6 +167,38 @@ fn fib(n)
 | >=               | greater than equal to                       |
 | <                | less than                                   |
 | >                | greater than                                |
+| &&               | boolean and                                 |
+| ||               | boolean or
+
+#### Keywords
+
+| Keyword                           | Effect                                      |
+| :---------------------------------| ------------------------------------------: |
+| if (condition)                    | standard if statemnt                        |
+| else                              | standard else, can be combined: else if     |
+| while (condition)                 | while condition is true while loops         |
+| for (declare; condition; statemnt | c style for loops                           |
+| var                               | declare a new variable to nil               |
+| print                             | prints the following statement              |
+| fn *name*(*args*)                 | declare a function                          |
+
+#### Built In functions
+| Function                          | Effect                                      |
+| :-------------------------------- | -------------------------------------------:|
+| clock() -> *number*               | unix time in seconds                        |
+| read(*path*) -> *sting*           | reads the file at the specified path        |
+| write(*path*, *text*) -> *number* | writes text to file at path returns 0 if ok |
+| number(*value*) -> *number*       | changes any type to a number                |
+| string(*value*) -> *string*       | changes numbers and bools to string literals| 
+
+
+
+
+
+
+
+
+
 
 
 
