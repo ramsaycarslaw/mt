@@ -7,7 +7,7 @@
 #include "debug.h"
 #include "vm.h"
 
-#define MT_VERSION "0.1.1"
+#define MT_VERSION "1.0"
 
 static void repl() {
 	char line[1024];
