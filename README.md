@@ -160,49 +160,85 @@ fn fib(n)
 ## Advanced Examples
 
 ### FizzBuzz
+The fizzBuzz problrm is a classic interview question. In mt it can be solved like so:
+```
+// fizzBuzz where n is the max number
+fn fizzBuzz(n) 
+{
+   var buffer = " ";
+   
+   for (var i = 0; i <= n; i = i + 1) 
+   {
+        if (i%3 == 0) 
+        {
+            buffer = buffer + "fizz";
+        }
+        
+        if (i%5 == 0) 
+        {
+            buffer = buffer + "Buzz";
+        }
+        
+        print string(i) + buffer;
+        buffer = " ";
+   }
+}
+```
 
+### Reading from files
+You can read and write to files using the built in read function.
+```
+fn main() 
+{
+    var str = read("path to file");
+    
+    str = str + "Some more text";
+    
+    write("new file.txt", str);
+}
+```
 
 ### Reference
 
 #### Operators
 
-| Operator         | Effect                                      |
-| :----------------| -------------------------------------------:|
-| +                | Adds two numbers or concatanates two strings|
-| -                | subtracts two numbers or negates one        |
-| *                | Multiplies two numbers                      |
-| /                | Divides two numbers                         |
-| ^                | raises the 1st num to the power of the  2nd |
-| !                | Not, !true = false etc                      |
-| ==               | is equal to                                 |
-| !=               | Not equal to                                |
-| <=               | less than or equal to                       |
-| >=               | greater than equal to                       |
-| <                | less than                                   |
-| >                | greater than                                |
-| &&               | boolean and                                 |
+| Operator          | Effect                                       |
+| :---------------- | :------------------------------------------- |
+| +                 | Adds two numbers or concatanates two strings |
+| -                 | subtracts two numbers or negates one         |
+| *                 | Multiplies two numbers                       |
+| /                 | Divides two numbers                          |
+| ^                 | raises the 1st num to the power of the  2nd  |
+| !                 | Not, !true = false etc                       |
+| ==                | is equal to                                  |
+| !=                | Not equal to                                 |
+| <=                | less than or equal to                        |
+| >=                | greater than equal to                        |
+| <                 | less than                                    |
+| >                 | greater than                                 |
+| &&                | boolean and                                  |
 | ||               | boolean or
 
 #### Keywords
 
-| Keyword                           | Effect                                      |
-| :---------------------------------| ------------------------------------------: |
-| if (condition)                    | standard if statemnt                        |
-| else                              | standard else, can be combined: else if     |
-| while (condition)                 | while condition is true while loops         |
-| for (declare; condition; statemnt | c style for loops                           |
-| var                               | declare a new variable to nil               |
-| print                             | prints the following statement              |
-| fn *name*(*args*)                 | declare a function                          |
+| Keyword                            | Effect                                      |
+| :--------------------------------- | :------------------------------------------ |
+| if (condition)                     | standard if statemnt                        |
+| else                               | standard else, can be combined: else if     |
+| while (condition)                  | while condition is true while loops         |
+| for (declare; condition; statemnt  | c style for loops                           |
+| var                                | declare a new variable to nil               |
+| print                              | prints the following statement              |
+| fn *name*(*args*)                  | declare a function                          |
 
 #### Built In functions
-| Function                          | Effect                                      |
-| :-------------------------------- | -------------------------------------------:|
-| clock() -> *number*               | unix time in seconds                        |
-| read(*path*) -> *sting*           | reads the file at the specified path        |
-| write(*path*, *text*) -> *number* | writes text to file at path returns 0 if ok |
-| number(*value*) -> *number*       | changes any type to a number                |
-| string(*value*) -> *string*       | changes numbers and bools to string literals| 
+| Function                          | Effect                                       |
+| :-------------------------------- | :------------------------------------------- |
+| clock() -> *number*               | unix time in seconds                         |
+| read(*path*) -> *sting*           | reads the file at the specified path         |
+| write(*path*, *text*) -> *number* | writes text to file at path returns 0 if ok  |
+| number(*value*) -> *number*       | changes any type to a number                 |
+| string(*value*) -> *string*       | changes numbers and bools to string literals |
 
 
 

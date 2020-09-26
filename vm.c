@@ -298,6 +298,15 @@ static int run() {
       push(NUMBER_VAL(-AS_NUMBER(pop())));
       break;
     }
+    case OP_INCR: {
+        if (!IS_NUMBER(peek(0))) {
+            runtimeError("Operand must be a number.");
+            return INTERPRET_RUNTIME_ERROR;
+        }              
+
+        push(NUMBER_VAL(AS_NUMBER(pop())+1));
+        break;
+    }               
     case OP_PRINT: {
       printValue(pop());
       printf("\n");
