@@ -249,6 +249,7 @@ Token scanToken()
 	case '/': return makeToken(TOKEN_SLASH);
 	case '*': return makeToken(TOKEN_STAR);
 	case '^': return makeToken(TOKEN_CARAT);
+    case '%': return makeToken(TOKEN_PERCENT);
 		// two or one 
 	case '!':
 		return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);

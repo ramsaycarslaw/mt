@@ -321,6 +321,7 @@ static void binary(bool canAssign)
 	case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
 	case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
 	case TOKEN_CARAT:         emitByte(OP_POW); break;
+    case TOKEN_PERCENT:       emitByte(OP_MOD); break;
 	default:
 		return; // Unreachable.
 	}
@@ -446,6 +447,7 @@ ParseRule rules[] = {
   [TOKEN_SEMICOLON]     = { NULL,     NULL,   PREC_NONE },
   [TOKEN_SLASH]         = { NULL,     binary, PREC_FACTOR },
   [TOKEN_CARAT]         = { NULL,     binary, PREC_FACTOR},
+  [TOKEN_PERCENT]       = { NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = { NULL,     binary, PREC_FACTOR },
   [TOKEN_BANG]          = { unary,    NULL,   PREC_NONE },
   [TOKEN_BANG_EQUAL]    = { NULL,     binary, PREC_EQUALITY },
@@ -691,7 +693,7 @@ static void function(FunctionType type)
 
     // creare fn obj
     ObjFunction* function = endCompiler();
-    emitBytes(OP_CONSTANT, makeConstant(OBJ_VAL(function)));
+    emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 }
 
 /* compile function declaration */

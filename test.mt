@@ -15,3 +15,5 @@ var b1 = true;
 var b2 = false;
 print !(b2 == b1);
 
+// mod
+print (100 % 3);

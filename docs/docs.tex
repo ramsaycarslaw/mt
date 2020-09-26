@@ -1,0 +1,147 @@
+\documentclass{report}
+
+\usepackage{microtype}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{lstautogobble}  % Fix relative indenting
+\usepackage{color}          % Code coloring
+\usepackage{zi4}
+
+\definecolor{bluekeywords}{rgb}{0.13, 0.13, 1}
+\definecolor{greencomments}{rgb}{0, 0.5, 0}
+\definecolor{redstrings}{rgb}{0.9, 0, 0}
+\definecolor{graynumbers}{rgb}{0.5, 0.5, 0.5}
+
+\usepackage{listings}
+\lstset{
+    autogobble,
+    columns=fullflexible,
+    showspaces=false,
+    showtabs=false,
+    breaklines=true,
+    showstringspaces=false,
+    breakatwhitespace=true,
+    escapeinside={(*@}{@*)},
+    commentstyle=\color{greencomments},
+    keywordstyle=\color{bluekeywords},
+    stringstyle=\color{redstrings},
+    numberstyle=\color{graynumbers},
+    basicstyle=\ttfamily\footnotesize,
+    frame=l,
+    framesep=12pt,
+    xleftmargin=12pt,
+    tabsize=4,
+    captionpos=b
+}
+
+\title{The MT Programming Language}
+\author{Ramsay Carslaw}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\chapter{Introduction}
+\section{What is MT?}
+The MT programming language is an open source, dynamically typed programming language intented to bridge the gap for new programmers between python and C. MT was implemented in C using a source to byte code compiler into a bytecode interpreter. This means MT is a resonably fast language.
+
+\section{Who is MT for?}
+MT is not intended for any serious develpoment projects, more a tool for learning. MT is a good halfway point between Python and your next language for new programmers. If you are looking to write an operating system MT is probably not the language for you, however if you are looking for a language to practice your data structures then MT will be a safe choice.
+
+\section{Who is this manual for?}
+This manual is for people with some programming experience that would like to learn MT. It's not too high level so even basic programming experince should be enough to learn MT. More advanced users can use this book as a refernce for syntax where as beginners can learn by completing the excercises at the end of each section.
+
+\section{Design Ideas}
+Although, MT supports object oriented programming this is by no means forced. It is perfectly fine to just use functions or code imperativley. Objects are in MT for the cases where it will make your life easier, they are not forced or nesseccerry.
+
+\section{Installing MT}
+Depending on your platform getting MT is slightly differnt. Once you have followed the relevant instructions you can run `mt' in your terminal to test if everything has installed correctly.
+\subsection{macOS}
+MT was developed on a mac so this one is pretty easy
+\begin{lstlisting}
+  git clone git clone https://github.com/ramsaycarslaw/mt.git
+  cd mt
+  make
+  make install
+\end{lstlisting}
+This does require that the XCode command line tools are intsalled, to do this just download XCode from the Mac App store.
+
+\subsection{GNU/Linux}
+Depending on your GNU/Linux Distrobution you may need to configure the makefile. By default the makefile uses clang which is not always installed on linux systems. To install clang use:
+\begin{lstlisting}
+  sudo pacman -S clang
+\end{lstlisting}
+
+Alternativley, change the CC line in the Makefile to whatever C compiler you use. (Note: This may effect the performace of MT). After that follow the following steps.
+\begin{lstlisting}
+  git clone git clone https://github.com/ramsaycarslaw/mt.git
+  cd mt
+  make
+  make install
+\end{lstlisting}
+
+\subsection{Windows}
+I don't have a windows machine to test any of this on but you will have to compile from source.
+
+\section{Contributing to MT}
+MT is open source and can be found on github. All help is apreciated as MT does not yet nativley support arrays. This is the killer feature that needs to be added before MT can become a seroius language. The current plan is to implemet arrays in MT using classes but a more permenant soloution needs to be found.
+
+\chapter{The Basics}
+\section{Saying Hello}
+\subsection{Hello World}
+The very first program needed by any language is the classic hello world. Hello World in MT is very simple.
+\begin{lstlisting}
+  print ``hello, world!'';
+\end{lstlisting}
+There are a few interesting features of MT's hello world. First print is a keyword. Usually, print is a function and it's contents will be contained in brackets. In MT however print is a keyword which makes it more beginner friendly as it works the same as all the other keywords in MT and they can program without understanding the concept of a function. Aside from print being a keyword everything else is pretty standard. The double quotes denote a string and the semi-colon the end of a statement.
+
+\subsection{Hello MT}
+To run the program above save it as hello.mt in your favorite text editor. You can then navigate to the directory where you saved that file and run mt hello.mt to run the code. You should see `hello, world!'. If MT warns you about the file not existing check you are in the right directory and that you saved the file. If you get an error like `no such command mt' check the installation process as something has gone wrong.
+
+\subsection{Hello User}
+The next program we will cover is getting input from the users of your program. This is essential for any fully featured program so we will cover that next. This will also introduce a few other concepts like string concatenation.
+
+\begin{lstlisting}
+  var name = input(``What is your name? '');
+  print ``Hello, '' + name;
+\end{lstlisting}
+
+In this case input is actually a built in function as it needs the brackets. The message (or string) inside the brackets is prineted as a prompt for the user to type in. The plus sign in this case is used to join the two strings so if the user types in bob for the input then the result will be ``Hello, bob''. Notice the var keyword as well, this is used to tell MT you have a new variable.
+
+\section{Numbers Game}
+That covers the basic of getting text in and out of MT. Now it's time we actually compute something. You don't even need to create a file to do some of this. Open your terminal and type in `mt'. You should see something that looks a bit like:
+\begin{lstlisting}
+mt>
+\end{lstlisting}
+This is called the REPL, you can use it to evaluate MT statements without a file. For exanple you can type in:
+\begin{lstlisting}
+mt> 10 + 12;
+\end{lstlisting}
+You will notice that nothing has happend. This is becuase we haven't told MT what to do with the result. To see the answer simply add a print beforehand.
+\begin{lstlisting}
+  mt> print 10 + 12;
+  22
+\end{lstlisting}
+This time it showed us the answer. This also works with the other basic operators
+\begin{lstlisting}
+  mt> print 10 * 12;
+  120
+  mt> print 10 - 12;
+  -2
+  mt> print 10 / 12;
+  0.833333
+  mt> print 10 ^ 12;
+  1e+12
+\end{lstlisting}
+There is no need to specify integers or floats in mt. This is becuase it is dynamically typed and can change during run time. You can also evaluate more complex statements invoving parenthesis.
+\begin{lstlisting}
+  mt> print (10 + 12 ^ (99 / 6 - (10 + 3.1415)));
+  4221.44
+\end{lstlisting}
+
+\section{The Truth, The Whole Truth and Nothing but the Truth}
+
+\section{My Type}
+
+\end{document}
