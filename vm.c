@@ -71,6 +71,11 @@ void initVM() {
   defineNative("input", inputNative);
   defineNative("number", doubleNative);
   defineNative("string", stringNative);
+  defineNative("exit", exitNative);
+  defineNative("clear", clearNative);
+  defineNative("show", showNative);
+  defineNative("Cd", cdNative);
+  defineNative("Ls", lsNative);
 }
 
 void freeVM() {
@@ -283,6 +288,10 @@ static int run() {
     }
     case OP_MOD: 
     {
+	if (!(IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))))
+	{
+	    runtimeError("Operands must be numbers.");
+	}
         double b = AS_NUMBER(pop());
         double a = AS_NUMBER(pop());
         double c = (long int)a % (long int)b;

@@ -1,8 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include "native.h"
+
+#define BUFFERSIZE 256
+
+// ------------------------------------------------------------
+//                     System Natives                         |
+// ------------------------------------------------------------
 
 /* read a file for built ins */
 static char* readFile(const char* path)
@@ -163,5 +172,90 @@ Value stringNative(int argCount, Value* args)
     return NUMBER_VAL(0);
 }
 
+/* Halt execution */
+Value exitNative(int argCount, Value *args)
+{
+    exit(0);
+}
 
+/* Clear the screen on POSIX systems */
+Value clearNative(int argCount, Value *args)
+{
+    printf("\e[1;1H\e[2J");
+    return NUMBER_VAL(0);
+}
 
+/* License infomation for the REPL */
+Value showNative(int argCount, Value* args)
+{
+    if (argCount != 1)
+	printf("Please select an option");
+    const char * message = AS_CSTRING(args[0]);
+
+    if (strcmp(message, "c") == 0)
+    {
+	printf("See https://www.gnu.org/licenses/gpl-3.0.en.html\n");
+    }
+    else if (strcmp(message, "w") == 0)
+    {
+	printf("See https://www.gnu.org/licenses/gpl-3.0.en.html\n");
+    }
+    return NUMBER_VAL(0);
+}
+
+/* functions like the unix `cd' command */
+Value cdNative(int argCount, Value *args)
+{
+    char *pth = AS_CSTRING(args[0]);
+    
+    char path[BUFFERSIZE];
+    strcpy(path,pth);
+
+    char cwd[BUFFERSIZE];
+    if(pth[0] != '/')
+    {
+        getcwd(cwd,sizeof(cwd));
+        strcat(cwd,"/");
+        strcat(cwd,path);
+        chdir(cwd);
+    }else{
+        chdir(pth);
+    }
+
+    return NUMBER_VAL(0);
+}
+
+/* functions like the unix `ls' command */
+Value lsNative(int argCount, Value *args)
+{
+    struct dirent **namelist;
+    int n;
+    if (argCount < 1 && argCount != 0)
+    {
+	printf("Too many arguments to call...\n");
+	exit(EXIT_FAILURE);
+    }
+    else if (argCount == 0)
+    {
+      n = scandir(".", &namelist, NULL, alphasort);
+    }
+    else
+    {
+	n = scandir(AS_CSTRING(args[0]), &namelist, NULL, alphasort);
+    }
+
+    if (n < 0)
+    {
+	printf("Could not perform operation `scandir'.\n");
+	exit(EXIT_FAILURE);
+    }
+    
+    while (n--)
+    {
+	// could add color here with d_type
+	printf("%s\n", namelist[n]->d_name);
+	free(namelist[n]);
+    }
+    free(namelist);
+    return NUMBER_VAL(0);
+}

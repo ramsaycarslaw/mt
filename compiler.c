@@ -35,6 +35,7 @@ typedef enum
   PREC_PRIMARY
 } Precedence;
 
+/* Template fuction for a parse rule */
 typedef void (*ParseFn)(bool canAssign);
 
 /* A ParseRule stores what function is needed to compile each token */
@@ -51,6 +52,13 @@ typedef struct
 	int depth;
 } Local;
 
+/* Stores function closure upvalues */
+typedef struct
+{
+    uint8_t index;
+    bool isLocal;
+} Upvalue;
+
 /* implicit main fn or actual fn */
 typedef enum 
 {
@@ -66,19 +74,23 @@ typedef struct Compiler
     ObjFunction* function;
     FunctionType type;
 
-	Local locals[UINT8_COUNT];
-	int localCount;
-	int scopeDepth;
+    Local locals[UINT8_COUNT];
+    int localCount;
+    Upvalue upvalues[UINT8_COUNT];
+    int scopeDepth;
 } Compiler;
 
+/* Global parser struct */
 Parser parser;
 
+/* This line may be redundant */
 Compiler* current = NULL;
 
 /* A get method for compling chunk */
 static Chunk* currentChunk()
 {
-  return &current->function->chunk;
+    // refactored version
+    return &current->function->chunk;
 }
 
 /* raises an error with the right line number */
@@ -300,14 +312,16 @@ static void parsePrecedence(Precedence precedence);
 /* Parser a binary expression */
 static void binary(bool canAssign)
 {
-	// Remember the operator.
+	/* 
+     * Remember the operator. 
+     */
 	TokenType operatorType = parser.previous.type;
 
-	// Compile the right operand.
+	/* Compile the right operand. */
 	ParseRule* rule = getRule(operatorType);
 	parsePrecedence((Precedence)(rule->precedence + 1));
 
-	// Emit the operator instruction.
+	/* Emit the operator instruction. */
 	switch (operatorType)
 	{
 	case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
@@ -323,7 +337,7 @@ static void binary(bool canAssign)
 	case TOKEN_CARAT:         emitByte(OP_POW); break;
     case TOKEN_PERCENT:       emitByte(OP_MOD); break;
 	default:
-		return; // Unreachable.
+		return; /* Unreachable. */
 	}
 }
 
@@ -343,7 +357,7 @@ static void literal(bool canAssign)
 	case TOKEN_NIL: emitByte(OP_NIL); break;
 	case TOKEN_TRUE: emitByte(OP_TRUE); break;
 	default:
-		return; // Unreachable.
+		return; /* Unreachable. */
 	}
 }
 
@@ -378,12 +392,59 @@ static void or_(bool canAssign)
 /* Parse a string */
 static void string(bool canAssign)
 {
-	emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+	emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
+                    parser.previous.length - 2)));
 }
 
 static uint8_t identifierConstant(Token* name);
-static int resolveLocal(Compiler* compiler, Token* token); 
+static int resolveLocal(Compiler* compiler, Token* token);
 
+/* Upvalues need to be added to the hash table */
+static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
+{
+    int upvalueCount = compiler->function->upvalueCount;
+
+    for (int i = 0; i < upvalueCount; i++)
+    {
+	Upvalue* upvalue = &compiler->upvalues[i];
+	if (upvalue->index == index && upvalue->isLocal == isLocal)
+	{
+	    return i;
+	}
+    }
+
+    if (upvalueCount == UINT8_COUNT)
+    {
+	error("Too many closure variables in function.");
+	return 0;
+    }
+    
+    compiler->upvalues[upvalueCount].isLocal = isLocal;
+    compiler->upvalues[upvalueCount].index = index;
+    return compiler->function->upvalueCount++;
+}
+
+/* Upvalues for function closures */
+static int resolveUpvalue(Compiler *compiler, Token* name)
+{
+    if (compiler->enclosing == NULL) return -1;
+
+    int local = resolveLocal(compiler->enclosing, name);
+    if (local != -1)
+    {
+	addUpvalue(compiler, (uint8_t)local, true);
+    }
+
+    int upvalue = resolveUpvalue(compiler->enclosing, name);
+    if (upvalue != -1)
+    {
+	return addUpvalue(compiler, (uint8_t)upvalue, false);
+    }
+
+    return -1;
+}
+
+/* Get the named variable from the compiler */
 static void namedVariable(Token name, bool canAssign)
 {
     uint8_t getOp, setOp;
@@ -393,6 +454,11 @@ static void namedVariable(Token name, bool canAssign)
     {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;   
+    }
+    else if ((arg = resolveUpvalue(current, &name)) != -1)
+    {
+	getOp = OP_GET_UPVALUE;
+	setOp = OP_SET_UPVALUE;
     }
     else 
     {
@@ -412,19 +478,21 @@ static void namedVariable(Token name, bool canAssign)
 	}
 }
 
+/* Get the variable from the compiler, given it is able to assign. */
 static void variable(bool canAssign)
 {
 	namedVariable(parser.previous, canAssign);
 }
 
+/* Parse a Unary operator ie. -a or !b */
 static void unary(bool canAssign)
 {
   TokenType operatorType = parser.previous.type;
 
-  // Compile the operand.
+  /* Compile the operand. */
   parsePrecedence(PREC_UNARY);
 
-  // Emit the operator instruction.
+  /* Emit the operator instruction. */
   switch (operatorType)
   {
   case TOKEN_BANG: emitByte(OP_NOT); break;
@@ -559,7 +627,7 @@ static void addLocal(Token name)
 /* add a local variable */
 static void declareVariable()
 {
-	// globals are implicit
+	/* globals are implicit */
 	if (current->scopeDepth == 0) return;
 
 	Token* name = &parser.previous;
@@ -671,7 +739,7 @@ static void function(FunctionType type)
     initCompiler(&compiler, type);
     beginScope();
 
-    // compile param list
+    /* compile parameter list */
     consume(TOKEN_LEFT_PAREN, "Expected '(' after function name.");
     if (!check(TOKEN_RIGHT_PAREN)) 
     {
@@ -689,13 +757,20 @@ static void function(FunctionType type)
     }
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after parameteres");
 
-    // fn body
+    /* function body compiler */
     consume(TOKEN_LEFT_BRACE, "Expected '{' before function body");
     block();
 
-    // creare fn obj
+    /* creare function object representation */
     ObjFunction* function = endCompiler();
     emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+
+    /* Handle closures and upvalues */
+    for (int i = 0; i < function->upvalueCount; i++)
+    {
+	emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+	emitByte(compiler.upvalues[i].index);
+    }
 }
 
 /* compile function declaration */
@@ -718,7 +793,7 @@ static void varDeclaration()
 	}
 	else
 	{
-		emitByte(OP_NIL); // variables are nil by default
+		emitByte(OP_NIL); /* variables are nil by default */
 	}
 	consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
 
@@ -742,7 +817,7 @@ static void forStatement()
 
     if (match(TOKEN_SEMICOLON)) 
     {
-        // No initialiser
+        /* No initialiser */
     }
     else if (match(TOKEN_VAR)) 
     {
@@ -824,7 +899,7 @@ static void printStatement()
 /* Compile a function return statement */
 static void returnStatement() 
 {
-    // cannot return from main
+    /* cannot return from main */
     if (current->type == TYPE_SCRIPT) 
     {
         error("Cannot return from top-level code.");
@@ -908,6 +983,7 @@ static void declaration()
 	if (parser.panicMode) synchronize();
 }
 
+/* Parse a generic stateent */
 static void statement()
 {
 	if (match(TOKEN_PRINT))
@@ -942,6 +1018,7 @@ static void statement()
 	}
 }
 
+/* Compile is the main function used to create bytecode */
 ObjFunction* compile(const char *src)
 {
 	initScanner(src);

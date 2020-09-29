@@ -239,6 +239,7 @@ fn main()
 | write(*path*, *text*) -> *number* | writes text to file at path returns 0 if ok  |
 | number(*value*) -> *number*       | changes any type to a number                 |
 | string(*value*) -> *string*       | changes numbers and bools to string literals |
+| raw()                             | Raw puts the shell in raw mode               |
 
 
 

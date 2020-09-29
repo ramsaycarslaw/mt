@@ -2,17 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "common.h"
 #include "chunk.h"
 #include "debug.h"
 #include "vm.h"
 
 /* current version */
-#define MT_VERSION "1.0"
+#define MT_VERSION "1.2.0"
 
+/* TODO - look into using readline here to get last line and arrow keys */
 static void repl() {
-	char line[1024];
-	printf("mt version %s shell\n", MT_VERSION);
+	char line[2056];
+	printf("MT v%s Copyright (C) 2020 Ramsay Carslaw This program comes with ABSOLUTELY NO WARRANTY; for details type `show(w);'. This is free software, and you are welcome to redistribute it under certain conditions; type `show(c);' for details.\n", MT_VERSION);
 	while (1)
 	{
 		printf("mt> ");
@@ -21,6 +25,54 @@ static void repl() {
 		{
 			printf("\n");
 			break;
+		}
+
+		if (line[0] == 'f' && line[1] == 'n')
+		{
+		    int scope = 0;
+		    for (int i = 0; i < (int)strlen(line); i++)
+		    {
+                      switch (line[i]) {
+                      case '{':
+                        scope++;
+                        break;
+                      case '}':
+                        scope--;
+                        break;
+                      default:
+                        break;
+                      }
+                    }
+
+		    while (scope != 0)
+		    {
+			char newline[256];
+
+			for (int k=0;k<scope;k++)
+			    printf("\t");
+			
+			if (!fgets(newline, sizeof(newline), stdin))
+			{
+			    printf("\n");
+			    break;
+			}
+
+			strcat(line, newline);
+
+			for (int j = 0; j < strlen(newline); j++)
+			{
+			    switch (newline[j]) {
+			    case '{':
+				scope++;
+				break;
+			    case '}':
+				scope--;
+				break;
+			    default:
+				break;
+                      }
+			}
+		    }
 		}
 		
 		interpret(line);
@@ -81,9 +133,37 @@ int main(int argc, char *argv[])
 		runFile(argv[1]);
 	}
 	else
-	{
-		fprintf(stderr, "Usage: mt [path]\n");
-		exit(64);
+	{    
+	    FILE *target;
+	    target = fopen("__devel_linker__.mt", "w");
+	    
+	    for (int i = argc-1; i> 0; i--)
+	    {
+		FILE *fptr;
+		char ch;
+
+		fptr = fopen(argv[i], "r");
+
+		if (fptr == NULL)
+		{
+		    printf("File %s does not exist\n", argv[i]);
+		    exit(0);
+		}
+
+		if (target == NULL)
+		{
+		    printf("Error linking files attempt recovery\n");
+		    runFile(argv[1]);
+		}
+
+		while ((ch = fgetc(fptr)) != EOF)
+		    fputc(ch,target);
+
+		fclose(fptr);
+	    }
+	    fclose(target);
+	    runFile("__devel_linker__.mt"); 	   
+	    remove("__devel_linker__.mt");
 	}
 	
 	freeVM();
