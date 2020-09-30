@@ -421,5 +421,57 @@ Value colorSetNative(int argCount, Value* args)
     return NUMBER_VAL(0);
 }
 
+// ------------------------------------------------------------
+//                     Array Natives
+// ------------------------------------------------------------
+
+/* append to a list */
+Value appendNative(int argCount, Value* args) {
+    // Append a value to the end of a list increasing the list's length by 1
+    if (argCount != 2 || !IS_LIST(args[0])) {
+        printf("List index out of range.\n");
+	exit(EXIT_FAILURE);
+    }
+    ObjList* list = AS_LIST(args[0]);
+    Value item = args[1];
+    appendToList(list, item);
+    return NIL_VAL;
+}
+
+/* delete from a list */
+Value deleteNative(int argCount, Value* args) {
+    // Delete an item from a list at the given index.
+    if (argCount != 2 || !IS_LIST(args[0]) || !IS_NUMBER(args[1])) {
+        printf("List index out of range.\n");
+	exit(EXIT_FAILURE);
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    int index = AS_NUMBER(args[1]);
+
+    if (!isValidListIndex(list, index)) {
+        printf("List index out of range.\n");
+	exit(EXIT_FAILURE);
+    }
+
+    deleteFromList(list, index);
+    return NIL_VAL;
+}
+
+/* Get the length of the list */
+Value lenNative(int argCount, Value *args)
+{
+    if (argCount != 1 || (!IS_LIST(args[0]) && !IS_STRING(args[0])))
+    {
+	printf("Cannot get length from no list/string object.\n");
+	exit(EXIT_FAILURE);
+    }
+
+    if (IS_LIST(args[0]))
+    {
+	return NUMBER_VAL(AS_LIST(args[0])->count);
+    }
+    return NUMBER_VAL(strlen(AS_CSTRING(args[0])));
+}
 
 

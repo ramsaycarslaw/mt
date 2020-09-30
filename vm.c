@@ -82,6 +82,11 @@ void initVM() {
   defineNative("printf", printfNative);
   defineNative("println", printlnNative);
   defineNative("color", colorSetNative);
+
+  /* Arrays */
+  defineNative("append", appendNative);
+  defineNative("delete", deleteNative);
+  defineNative("len", lenNative);
 }
 
 void freeVM() {
@@ -120,7 +125,7 @@ static bool callValue(Value callee, int argCount) {
   if (IS_OBJ(callee)) {
     switch (OBJ_TYPE(callee)) {
     case OBJ_CLOSURE:
-	return call(AS_CLOSURE(callee), argCount);
+      return call(AS_CLOSURE(callee), argCount);
     case OBJ_FUNCTION:
       return call(AS_CLOSURE(callee), argCount);
     case OBJ_NATIVE: {
@@ -159,7 +164,8 @@ static void concatenate() {
 static int run() {
   CallFrame *frame = &vm.frames[vm.frameCount - 1];
 #define READ_BYTE() (*frame->ip++) // method to get the next byte
-#define READ_CONSTANT() (frame->closure->function->chunk.constants.values[READ_BYTE()])
+#define READ_CONSTANT()                                                        \
+  (frame->closure->function->chunk.constants.values[READ_BYTE()])
 #define READ_SHORT()                                                           \
   (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_STRING() AS_STRING(READ_CONSTANT())
@@ -268,6 +274,28 @@ static int run() {
         double b = AS_NUMBER(pop());
         double a = AS_NUMBER(pop());
         push(NUMBER_VAL(a + b));
+      } else if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) {
+        ObjList *list = AS_LIST(pop());
+        double b = AS_NUMBER(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) + b);
+        }
+        push(OBJ_VAL(list));
+      } else if (IS_NUMBER(peek(0)) && IS_LIST(peek(1))) {
+        double b = AS_NUMBER(pop());
+        ObjList *list = AS_LIST(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) + b);
+        }
+        push(OBJ_VAL(list));
       } else {
         runtimeError("Operands must be two numbers or two strings.");
         return INTERPRET_RUNTIME_ERROR;
@@ -275,34 +303,129 @@ static int run() {
       break;
     }
     case OP_SUBTRACT:
-      BINARY_OP(NUMBER_VAL, -);
+      if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) {
+        ObjList *list = AS_LIST(pop());
+        double b = AS_NUMBER(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) - b);
+        }
+        push(OBJ_VAL(list));
+      } else if (IS_NUMBER(peek(0)) && IS_LIST(peek(1))) {
+        double b = AS_NUMBER(pop());
+        ObjList *list = AS_LIST(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) - b);
+        }
+        push(OBJ_VAL(list));
+      } else {
+        BINARY_OP(NUMBER_VAL, -);
+      }
       break;
     case OP_MULTIPLY:
-      BINARY_OP(NUMBER_VAL, *);
+      if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) {
+        ObjList *list = AS_LIST(pop());
+        double b = AS_NUMBER(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) * b);
+        }
+        push(OBJ_VAL(list));
+      } else if (IS_NUMBER(peek(0)) && IS_LIST(peek(1))) {
+        double b = AS_NUMBER(pop());
+        ObjList *list = AS_LIST(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) * b);
+        }
+        push(OBJ_VAL(list));
+      } else {
+        BINARY_OP(NUMBER_VAL, *);
+      }
       break;
     case OP_DIVIDE:
-      BINARY_OP(NUMBER_VAL, /);
+      if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) {
+        ObjList *list = AS_LIST(pop());
+        double b = AS_NUMBER(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) / b);
+        }
+        push(OBJ_VAL(list));
+      } else if (IS_NUMBER(peek(0)) && IS_LIST(peek(1))) {
+        double b = AS_NUMBER(pop());
+        ObjList *list = AS_LIST(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(AS_NUMBER(list->items[i]) / b);
+        }
+        push(OBJ_VAL(list));
+      } else {
+        BINARY_OP(NUMBER_VAL, /);
+      }
       break;
+
     case OP_NOT:
       push(BOOL_VAL(isFalsey(pop())));
       break;
     case OP_POW: {
-      double b = AS_NUMBER(pop());
-      double a = AS_NUMBER(pop());
-      push(NUMBER_VAL(pow(a, b)));
-      break;
-    }
-    case OP_MOD: 
-    {
-	if (!(IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))))
-	{
-	    runtimeError("Operands must be numbers.");
-	}
+      if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) {
+        ObjList *list = AS_LIST(pop());
+        double b = AS_NUMBER(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(pow(AS_NUMBER(list->items[i]), b));
+        }
+        push(OBJ_VAL(list));
+      } else if (IS_NUMBER(peek(0)) && IS_LIST(peek(1))) {
+        double b = AS_NUMBER(pop());
+        ObjList *list = AS_LIST(pop());
+
+        for (int i = 0; i < list->count; i++) {
+          if (!IS_NUMBER(list->items[i])) {
+            continue;
+          }
+          list->items[i] = NUMBER_VAL(pow(AS_NUMBER(list->items[i]), b));
+        }
+        push(OBJ_VAL(list));
+      } else {
         double b = AS_NUMBER(pop());
         double a = AS_NUMBER(pop());
-        double c = (long int)a % (long int)b;
-        push(NUMBER_VAL(c));
-        break;        
+        push(NUMBER_VAL(pow(a, b)));
+      }
+      break;
+    }
+    case OP_MOD: {
+      if (!(IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))) {
+        runtimeError("Operands must be numbers.");
+      }
+      double b = AS_NUMBER(pop());
+      double a = AS_NUMBER(pop());
+      double c = (long int)a % (long int)b;
+      push(NUMBER_VAL(c));
+      break;
     }
     case OP_NEGATE: {
       if (!IS_NUMBER(peek(0))) {
@@ -314,14 +437,14 @@ static int run() {
       break;
     }
     case OP_INCR: {
-        if (!IS_NUMBER(peek(0))) {
-            runtimeError("Operand must be a number.");
-            return INTERPRET_RUNTIME_ERROR;
-        }              
+      if (!IS_NUMBER(peek(0))) {
+        runtimeError("Operand must be a number.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
 
-        push(NUMBER_VAL(AS_NUMBER(pop())+1));
-        break;
-    }               
+      push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
+      break;
+    }
     case OP_PRINT: {
       printValue(pop());
       printf("\n");
@@ -357,12 +480,85 @@ static int run() {
       break;
     }
 
-    case OP_CLOSURE:
-    {
-	ObjFunction* function = AS_FUNCTION(READ_CONSTANT());
-	ObjClosure* closure = newClosure(function);
-	push(OBJ_VAL(closure));
-	break;
+    case OP_CLOSURE: {
+      ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+      ObjClosure *closure = newClosure(function);
+      push(OBJ_VAL(closure));
+      break;
+    }
+
+    case OP_BUILD_LIST: {
+      ObjList *list = newList();
+      uint8_t itemCount = READ_BYTE();
+
+      push(OBJ_VAL(list));
+      for (int i = itemCount; i > 0; i--) {
+        appendToList(list, peek(i));
+      }
+      pop();
+
+      while (itemCount-- > 0) {
+        pop();
+      }
+
+      push(OBJ_VAL(list));
+      break;
+    }
+
+    case OP_INDEX_SUBSCR: {
+      Value index = pop();
+      Value indexable = pop();
+      Value result;
+
+      if (!IS_LIST(indexable)) {
+        runtimeError("Invalid type to index to.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+
+      ObjList *list = AS_LIST(indexable);
+
+      if (!IS_NUMBER(index)) {
+        runtimeError("List index is not a number.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+
+      int index_i = AS_NUMBER(index);
+
+      if (!isValidListIndex(list, index_i)) {
+        runtimeError("List index out of range.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+
+      result = indexFromList(list, index_i);
+      push(result);
+      break;
+    }
+
+    case OP_STORE_SUBSCR: {
+      Value item = pop();
+      Value index = pop();
+      Value indexable = pop();
+
+      if (!IS_LIST(indexable)) {
+        runtimeError("Cannot store value in a non-list.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      ObjList *list = AS_LIST(indexable);
+
+      if (!IS_NUMBER(index)) {
+        runtimeError("List index is not a number.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      int index_i = AS_NUMBER(index);
+
+      if (!isValidListIndex(list, index_i)) {
+        runtimeError("Invalid list index.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+
+      storeToList(list, index_i, item);
+      push(item);
+      break;
     }
 
     case OP_RETURN: {
@@ -396,7 +592,7 @@ InterpretResult interpret(const char *source) {
 
   push(OBJ_VAL(function));
 
-  ObjClosure* closure = newClosure(function);
+  ObjClosure *closure = newClosure(function);
   pop();
   push(OBJ_VAL(closure));
   callValue(OBJ_VAL(closure), 0);

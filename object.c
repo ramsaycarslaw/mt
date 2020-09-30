@@ -22,6 +22,64 @@ static Obj* allocateObject(size_t size, ObjType type)
 	return object;
 }
 
+/* Initialise a new list object */
+ObjList* newList()
+{
+    ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    list->items = NULL;
+    list->count = 0;
+    list->capacity = 0;
+    return list;
+}
+
+/* Add a new value to the list */
+void appendToList(ObjList* list, Value value) 
+{
+    if (list->capacity < list->count + 1) 
+    {
+        int oldCapacity = list->capacity;
+        list->capacity = GROW_CAPACITY(oldCapacity);
+        list->items = (Value*)reallocate(list->items, sizeof(Value)*oldCapacity, sizeof(Value)*list->capacity);
+    }
+
+    list->items[list->count] = value;
+    list->count++;
+    return;
+}
+
+/* Adds a value to s given place in a list */
+void storeToList(ObjList* list, int index, Value value) 
+{
+    list->items[index] = value;
+}
+
+/* Get a value from a given index */
+Value indexFromList(ObjList* list, int index) 
+{
+    return list->items[index];
+}
+
+/* Deletes an item from list */
+void deleteFromList(ObjList* list, int index) 
+{
+    for (int i = 0; i < list->count - 1; i++) 
+    {
+        list->items[i] = list->items[i+1]; 
+    }
+    list->items[list->count - 1] = NIL_VAL;
+    list->count--;
+}
+
+/* Check if its valid */
+bool isValidListIndex(ObjList* list, int index) 
+{
+    if (index < 0 || index > list->count - 1) 
+    {
+        return false;
+    }
+    return true;
+}
+
 /* Initialise a new object closure */
 ObjClosure* newClosure(ObjFunction* function)
 {
@@ -116,6 +174,22 @@ static void printFunction(ObjFunction* function)
     printf("<fn %s>", function->name->chars);
 }
 
+/* Print a list object */
+static void printList(ObjList* list) 
+{
+    printf("[");
+    for (int i = 0; i < list->count - 1; i++) 
+    {
+        printValue(list->items[i]);
+        printf(", ");
+    }
+    if (list->count != 0) 
+    {
+        printValue(list->items[list->count - 1]);
+    }
+    printf("]");
+}
+
 void printObject(Value value)
 {
     switch (OBJ_TYPE(value))
@@ -130,7 +204,10 @@ void printObject(Value value)
         printf("<native fn>");
         break;
     case OBJ_STRING:
-	printf("%s", AS_CSTRING(value));
-	break;
+    	printf("%s", AS_CSTRING(value));
+	    break;
+    case OBJ_LIST:
+        printList(AS_LIST(value));
+        break;
 	}
 }

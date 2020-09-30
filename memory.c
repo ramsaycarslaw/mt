@@ -51,6 +51,12 @@ static void freeObject(Obj* object)
         break;
     }
 
+    case OBJ_LIST: 
+    {
+        FREE(ObjList, object);
+        break;
+    }
+
     case OBJ_CLOSURE:
     {
 	FREE(ObjClosure, object);

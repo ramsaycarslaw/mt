@@ -19,6 +19,9 @@ typedef enum
     OP_SET_GLOBAL,
     OP_GET_UPVALUE,
     OP_SET_UPVALUE,
+    OP_BUILD_LIST, // []
+    OP_INDEX_SUBSCR, // [n]
+    OP_STORE_SUBSCR, // [n] = n
     OP_EQUAL,
     OP_GREATER,
     OP_LESS,
