@@ -18,5 +18,7 @@ Value clearNative(int argCount, Value* args);
 Value showNative(int argCount, Value* args);
 Value cdNative(int argCount, Value *args);
 Value lsNative(int argCount, Value *args);
-
+Value printfNative(int argCount, Value* args);
+Value printlnNative(int argCount, Value* args);
+Value colorSetNative(int argCount, Value* args);
 #endif

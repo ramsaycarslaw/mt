@@ -259,3 +259,167 @@ Value lsNative(int argCount, Value *args)
     free(namelist);
     return NUMBER_VAL(0);
 }
+
+// ------------------------------------------------------------
+//                     Printing
+// ------------------------------------------------------------
+
+/* Helper function for printf */
+static void printNewline(const char *string)
+{
+    for (int i = 0; i < (int)strlen(string); i++)
+    {
+	if (string[i] == '\\')
+	{
+	    switch (string[i+1])
+	    {
+	    case 'n':
+		printf("\n");
+		i += 2;
+		break;
+	    case 't':
+		printf("\t");
+		i += 2;
+		break;
+	    case 'r':
+		printf("\r");
+		i += 2;
+		break;
+	    case 'e':
+		printf("\e%c%c", string[i+2], string[i+3]);
+		i += 4;
+		break;
+	    }
+	}
+	printf("%c", string[i]);
+    }
+    return;
+}
+
+/* C style printf function */
+Value printfNative(int argCount, Value* args)
+{
+    /* Check we have the right number of args */
+    if (argCount < 1)
+    {
+	printf("Nothing to print\n");
+	exit(EXIT_FAILURE);
+    }
+
+    char *str = AS_CSTRING(args[0]);
+    /* 
+    *  In this case no futher computation is required 
+    *  There are no other percent signs and as such print
+    *  the first string 
+    */
+    if (argCount == 1)
+    {
+	printNewline(str);
+	return NUMBER_VAL(1);
+    }
+
+    /* Now we need to find all escape codes */
+    int escp = 1;
+    for (int i = 0; i < strlen(str); i++)
+    {
+	 
+	if (str[i] == '%')
+	{
+	    switch (str[i+1])
+	    {
+	    case 'd':
+		printf("%lf", AS_NUMBER(args[escp]));
+		escp++;
+		i += 2;
+		break;
+	    case 's':
+		printf("%s", AS_CSTRING(args[escp]));
+		escp++;
+		i += 2;
+		break;
+	    }
+	}
+
+	if (str[i] == '\\')
+	{
+	    switch (str[i+1])
+	    {
+	    case 'n':
+		printf("\n");
+		i += 2;
+		break;
+	    case 't':
+		printf("\t");
+		i += 2;
+		break;
+	    case 'r':
+		printf("\r");
+		i += 2;
+		break;
+		
+	    }
+	}
+	
+	printf("%c", str[i]);
+    }
+    return NUMBER_VAL(0);
+}
+
+/* Identical to printf except adds a newline afterwards */
+Value printlnNative(int argCount, Value* args)
+{
+    Value r = printfNative(argCount, args);
+    printf("\n");
+    return r;
+}
+
+/* Print with more colors */
+Value colorSetNative(int argCount, Value* args) 
+{
+    if (argCount < 2) 
+    {
+        printf("Not enough arguments to pretty");
+    }
+
+    char *color = AS_CSTRING(args[0]);
+    char *weight = AS_CSTRING(args[1]);
+
+    int delim = 0;
+
+    if (strcmp(weight, "bold") == 0 || strcmp("b", weight) == 0) 
+    {
+       delim = 1; 
+    }
+
+    if (strcmp(color, "red") == 0 || strcmp(color, "r") == 0) 
+    {
+        printf("\033[%d;31m", delim);
+    } 
+    else if (strcmp(color, "green") == 0 || strcmp(color, "g") == 0) 
+    {
+        printf("\033[%d;32m", delim);
+    }
+    else if (strcmp(color, "yellow") == 0 || strcmp(color, "y") == 0) 
+    {
+        printf("\033[%d;33m", delim);
+    }
+    else if (strcmp(color, "blue") == 0 || strcmp(color, "b") == 0) 
+    {
+        printf("\033[%d;34m", delim);
+    }
+    else if (strcmp(color, "magenta") == 0 || strcmp(color, "m") == 0) 
+    {
+        printf("\033[%d;35m", delim);
+    }
+    else if (strcmp(color, "cyan") == 0 || strcmp(color, "c") == 0) 
+    {
+        printf("\033[%d;36m", delim);
+    } else 
+    {
+        printf("\033[0m");
+    }
+    return NUMBER_VAL(0);
+}
+
+
+

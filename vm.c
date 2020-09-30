@@ -65,6 +65,7 @@ void initVM() {
   initTable(&vm.strings);
   initTable(&vm.globals);
 
+  /* System */
   defineNative("clock", clockNative);
   defineNative("read", readNative);
   defineNative("write", writeNative);
@@ -76,6 +77,11 @@ void initVM() {
   defineNative("show", showNative);
   defineNative("Cd", cdNative);
   defineNative("Ls", lsNative);
+
+  /* Printing */
+  defineNative("printf", printfNative);
+  defineNative("println", printlnNative);
+  defineNative("color", colorSetNative);
 }
 
 void freeVM() {

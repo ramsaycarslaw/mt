@@ -64,6 +64,15 @@ typedef struct
     ObjFunction* function;
 } ObjClosure;
 
+/* Adding lists to mt */
+typedef struct 
+{
+    Obj obj;
+    int count;
+    int capacity;
+    Value* items;
+} ObjList;
+
 ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction();
 ObjNative* newNative(NativeFn functiom);
