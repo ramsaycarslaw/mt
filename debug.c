@@ -113,6 +113,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     return jumpInstruction("OP_LOOP", -1, chunk, offset);
   case OP_CALL:
     return byteInstruction("OP_CALL", chunk, offset);
+  case OP_INDEX_SUBSCR:
+      return simpleInstruction("OP_INDEX_SUBSCR", offset);
+  case OP_STORE_SUBSCR:
+      return simpleInstruction("OP_STORE_SUBSCR", offset);
   case OP_CLOSURE: {
     offset++;
     uint8_t constant = chunk->code[offset++];

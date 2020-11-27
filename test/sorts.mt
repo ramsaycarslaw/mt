@@ -15,7 +15,9 @@ fn bubble(arr)
     return arr;    
 }
 
-
 var foo = [1,3847,398,1238,538998,23,81734,38947,43783];
 
-print bubble(foo);
+var start = clock();
+bubble(foo);
+var elapsed = clock() - start;
+print elapsed;

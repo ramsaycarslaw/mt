@@ -473,5 +473,3 @@ Value lenNative(int argCount, Value *args)
     }
     return NUMBER_VAL(strlen(AS_CSTRING(args[0])));
 }
-
-
