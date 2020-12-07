@@ -11,7 +11,7 @@
 #include "vm.h"
 
 /* current version */
-#define MT_VERSION "1.3.1"
+#define MT_VERSION "1.3.2"
 
 /* TODO - look into using readline here to get last line and arrow keys */
 static void repl() {
