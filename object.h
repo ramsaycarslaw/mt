@@ -27,6 +27,7 @@ typedef enum
     OBJ_NATIVE,
     OBJ_STRING,
     OBJ_LIST,
+    OBJ_UPVALUE,
 } ObjType;
 
 struct sObj
@@ -60,11 +61,22 @@ struct sObjString
 	uint32_t hash;
 };
 
+/* Used for detecting scope as a runtime object */
+typedef struct ObjUpvalue
+{
+  Obj obj;
+  Value* location; 
+  Value closed;
+  struct ObjUpvalue* next;
+} ObjUpvalue;
+
 /* such that variables from outer functions can be accesssed */
 typedef struct
 {
     Obj obj;
     ObjFunction* function;
+    ObjUpvalue** upvalues;
+    int upvalueCount;
 } ObjClosure;
 
 /* Adding lists to mt */
@@ -89,6 +101,7 @@ ObjFunction* newFunction();
 ObjNative* newNative(NativeFn functiom);
 ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
+ObjUpvalue* newUpvalue(Value* slot);
 void printObject(Value value);
 
 static inline bool isObjType(Value value, ObjType type)

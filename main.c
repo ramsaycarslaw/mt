@@ -9,74 +9,17 @@
 #include "chunk.h"
 #include "debug.h"
 #include "vm.h"
+#include "repl.h"
 
 /* current version */
 #define MT_VERSION "1.3.2"
 
 /* TODO - look into using readline here to get last line and arrow keys */
-static void repl() {
-	char line[2056];
-	printf("MT v%s Copyright (C) 2020 Ramsay Carslaw This program comes with ABSOLUTELY NO WARRANTY; for details type `show(w);'. This is free software, and you are welcome to redistribute it under certain conditions; type `show(c);' for details.\n", MT_VERSION);
-	while (1)
-	{
-		printf("mt> ");
-		
-		if (!fgets(line, sizeof(line), stdin))
-		{
-			printf("\n");
-			break;
-		}
+static void repl() 
+{
+    repl_loop();
 
-		if (line[0] == 'f' && line[1] == 'n')
-		{
-		    int scope = 0;
-		    for (int i = 0; i < (int)strlen(line); i++)
-		    {
-                      switch (line[i]) {
-                      case '{':
-                        scope++;
-                        break;
-                      case '}':
-                        scope--;
-                        break;
-                      default:
-                        break;
-                      }
-                    }
-
-		    while (scope != 0)
-		    {
-			char newline[256];
-
-			for (int k=0;k<scope;k++)
-			    printf("\t");
-			
-			if (!fgets(newline, sizeof(newline), stdin))
-			{
-			    printf("\n");
-			    break;
-			}
-
-			strcat(line, newline);
-
-			for (int j = 0; j < strlen(newline); j++)
-			{
-			    switch (newline[j]) {
-			    case '{':
-				scope++;
-				break;
-			    case '}':
-				scope--;
-				break;
-			    default:
-				break;
-                      }
-			}
-		    }
-		}
-		
-		interpret(line);
-	}
+    return;    
 }
 
 static char *readLiterate(const char * src)

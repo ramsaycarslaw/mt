@@ -28,6 +28,8 @@ typedef struct {
   Table globals;
   Table strings;
 
+  ObjUpvalue* openUpvalues;
+
   Obj *objects;
 } VM;
 
