@@ -28,6 +28,7 @@ typedef struct {
   Table globals;
   Table strings;
 
+  ObjString* initString; // used to initialise functions
   ObjUpvalue* openUpvalues;
 
   Obj *objects;

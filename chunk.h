@@ -19,6 +19,8 @@ typedef enum
     OP_SET_GLOBAL,
     OP_GET_UPVALUE,
     OP_SET_UPVALUE,
+    OP_SET_PROPERTY,
+    OP_GET_PROPERTY,
     OP_BUILD_LIST, // []
     OP_INDEX_SUBSCR, // [n]
     OP_STORE_SUBSCR, // [n] = n
@@ -32,6 +34,7 @@ typedef enum
     OP_JUMP_IF_FALSE,
     OP_LOOP,
     OP_CALL,
+    OP_INVOKE,
     OP_CLOSURE,
     OP_CLOSE_UPVALUE,
     OP_ADD,      // +
@@ -42,6 +45,8 @@ typedef enum
     OP_POW,      // ^
     OP_MOD,      // %
     OP_RETURN,   // return
+    OP_CLASS,
+    OP_METHOD
 } OpCode;
 
 /* Byte code chunk definition: wrapper for dynamic array */

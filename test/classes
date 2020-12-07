@@ -1,0 +1,23 @@
+class Matrix 
+{
+  init(rows, cols, data) 
+  {
+    this.rows = rows;
+    this.cols = cols;
+    this.data = data;
+  }
+
+  // Transpose of a matrix
+  T() 
+  {
+    var temp = this.cols;
+    this.cols = this.rows;
+    this.rows = temp;
+  }
+}
+
+
+var mat = Matrix(2, 2, [[1,2],[3,4]]);
+print mat.data;
+mat.T();
+print mat.data;

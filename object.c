@@ -22,6 +22,28 @@ static Obj* allocateObject(size_t size, ObjType type)
 	return object;
 }
 
+/* Initialise a bound method */
+ObjBoundMethod* newBoundMethod(Value reciever, ObjClosure* method) 
+{
+  ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
+
+  bound->reciever = reciever;
+  bound->method = method;
+  return bound;
+}
+
+/* Initalise a new class */
+ObjClass* newClass(ObjString* name) 
+{
+    // we call it klass so that this will still compile with a CXX compiler
+    // users can still extend mt with cpp features
+    // just add $CXX to the makefile
+    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    klass->name = name;
+    initTable(&klass->methods);
+    return klass;
+}
+
 /* Initialise a new list object */
 ObjList* newList()
 {
@@ -118,6 +140,14 @@ ObjFunction* newFunction()
     function->name = NULL;
     initChunk(&function->chunk);
     return function;
+}
+
+ObjInstance* newInstance(ObjClass* klass) 
+{
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+    instance->klass = klass;
+    initTable(&instance->fields);
+    return instance;
 }
 
 /* Create a new native function */
@@ -223,12 +253,20 @@ void printObject(Value value)
 {
     switch (OBJ_TYPE(value))
     {
+    case OBJ_CLASS:
+        printf("%s", AS_CLASS(value)->name->chars);
+        break;
     case OBJ_CLOSURE:
-	printFunction(AS_CLOSURE(value)->function);
-	break;
+	    printFunction(AS_CLOSURE(value)->function);
+	    break;
+    case OBJ_BOUND_METHOD:
+      printFunction(AS_BOUND_METHOD(value)->method->function);
     case OBJ_FUNCTION:
         printFunction(AS_FUNCTION(value));
         break; 
+    case OBJ_INSTANCE:
+        printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+        break;
     case OBJ_NATIVE:
         printf("<native fn>");
         break;

@@ -1,0 +1,3 @@
+class Matrix {}
+
+print Matrix();
