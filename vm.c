@@ -510,26 +510,41 @@ static int run() {
       Value indexable = pop();
       Value result;
 
-      if (!IS_LIST(indexable)) {
-        runtimeError("Invalid type to index to.");
+      if (IS_LIST(indexable)) {
+        ObjList *list = AS_LIST(indexable);
+
+        if (!IS_NUMBER(index)) {
+            runtimeError("List index is not a number.");
+            return INTERPRET_RUNTIME_ERROR;
+        }
+        else if (!isValidListIndex(list, AS_NUMBER(index))) 
+        {
+            runtimeError("List index out of range.");
+            return INTERPRET_RUNTIME_ERROR;
+        }
+        result = indexFromList(list, AS_NUMBER(index));
+      } 
+      else if (IS_STRING(indexable)) 
+      {
+        ObjString* string = AS_STRING(indexable);
+        if (!IS_NUMBER(index)) 
+        {
+            runtimeError("String index is not a number");
+            return INTERPRET_RUNTIME_ERROR;
+        } else if (!isValidStringIndex(string, AS_NUMBER(index))) 
+        {
+            runtimeError("String index out of range");
+            return INTERPRET_RUNTIME_ERROR; 
+        }
+        result = indexFromString(string, AS_NUMBER(index));
+      } 
+      else 
+      {
+        runtimeError("Object is not indexable");
         return INTERPRET_RUNTIME_ERROR;
       }
 
-      ObjList *list = AS_LIST(indexable);
 
-      if (!IS_NUMBER(index)) {
-        runtimeError("List index is not a number.");
-        return INTERPRET_RUNTIME_ERROR;
-      }
-
-      int index_i = AS_NUMBER(index);
-
-      if (!isValidListIndex(list, index_i)) {
-        runtimeError("List index out of range.");
-        return INTERPRET_RUNTIME_ERROR;
-      }
-
-      result = indexFromList(list, index_i);
       push(result);
       break;
     }

@@ -80,6 +80,19 @@ bool isValidListIndex(ObjList* list, int index)
     return true;
 }
 
+bool isValidStringIndex(ObjString* string, int index) {
+    if (index < 0 || index > string->length - 1) {
+        return false;
+    }
+    return true;
+}
+
+Value indexFromString(ObjString* string, int index) {
+    ObjString* newString = copyString((char*)(string->chars + index), 1);
+    return OBJ_VAL(newString);
+}
+
+
 /* Initialise a new object closure */
 ObjClosure* newClosure(ObjFunction* function)
 {

@@ -82,6 +82,8 @@ void storeToList(ObjList* list, int index, Value value);
 Value indexFromList(ObjList* list, int index);
 void deleteFromList(ObjList* list, int index);
 bool isValidListIndex(ObjList* list, int index);
+bool isValidStringIndex(ObjString* string, int index);
+Value indexFromString(ObjString* string, int index);
 ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction();
 ObjNative* newNative(NativeFn functiom);

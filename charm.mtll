@@ -1,0 +1,22 @@
+This is a literate program. You can write text about your programs
+
+---
+
+print "Hello World";
+
+---
+
+Code is sepeareted with three hypons
+
+---
+
+// for loop
+for (var x = 0; x < 100; x = x + 1)
+{
+    print x;
+}
+
+---
+
+This is quite cool
+
