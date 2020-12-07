@@ -244,17 +244,17 @@ fn main()
 
 ## ToDo
 > In no particular order
-- [] Garbage Collector
-- [] Optimiser
+- [ ] Garbage Collector
+- [ ] Optimiser
 - [x] String Subscript Get
-- [] String Subscript Set
+- [ ] String Subscript Set
 - [x] Text editor (see https://github.com/ramsaycarslaw/charm)
-- [] Classes
-- [] Standard libary
-    - [] std linear algebra
-    - [] std string manip
-    - [] std network
-    - [] std I/O
+- [ ] Classes
+- [ ] Standard libary
+    - [ ] std linear algebra
+    - [ ] std string manip
+    - [ ] std network
+    - [ ] std I/O
 
 
 
