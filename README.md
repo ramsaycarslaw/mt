@@ -144,7 +144,8 @@ for (var i = 0; i < 10; i = i + 1)
     print i;
 }
 ```
-### 10. functions
+
+### 10. functions
 Functions are most similar to python in thier declaration
 ```
 fn fib(n) 
@@ -241,8 +242,19 @@ fn main()
 | string(*value*) -> *string*       | changes numbers and bools to string literals |
 | raw()                             | Raw puts the shell in raw mode               |
 
-
-
+## ToDo
+> In no particular order
+- [] Garbage Collector
+- [] Optimiser
+- [x] String Subscript Get
+- [] String Subscript Set
+- [x] Text editor (see https://github.com/ramsaycarslaw/charm)
+- [] Classes
+- [] Standard libary
+    - [] std linear algebra
+    - [] std string manip
+    - [] std network
+    - [] std I/O
 
 
 
