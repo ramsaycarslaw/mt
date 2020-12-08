@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "native.h"
 
@@ -91,6 +92,23 @@ Value writeNative(int argCount, Value* args)
 
     fprintf(fptr, "%s", wrt);
     return NUMBER_VAL(0);
+}
+
+Value randIntNative(int argCount, Value* args) 
+{
+  if (argCount != 2) 
+  {
+    warn(2, argCount, "randInt"); 
+  }
+
+  int l;
+  int r;
+  l = AS_NUMBER(args[0]);
+  r = AS_NUMBER(args[1]);
+
+  srand(time(0)); // get seed as time
+  int rand_num = (rand() % (r - l + 1)) + l;
+  return NUMBER_VAL(rand_num);
 }
 
 /* Get user input as string */

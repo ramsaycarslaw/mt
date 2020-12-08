@@ -10,6 +10,7 @@
 Value clockNative(int argCount, Value* args);
 Value readNative(int argCount, Value* args);
 Value writeNative(int argCount, Value* args);
+Value randIntNative(int argcount, Value* args);
 Value inputNative(int argCount, Value* args);
 Value doubleNative(int argCount, Value* args);
 Value stringNative(int argCount, Value* args);

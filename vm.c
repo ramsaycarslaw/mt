@@ -73,6 +73,7 @@ void initVM() {
   defineNative("clock", clockNative);
   defineNative("read", readNative);
   defineNative("write", writeNative);
+  defineNative("randInt", randIntNative);
   defineNative("input", inputNative);
   defineNative("number", doubleNative);
   defineNative("string", stringNative);
