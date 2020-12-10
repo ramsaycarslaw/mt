@@ -149,7 +149,7 @@ static TokenType identifierType()
 {
 	switch (scanner.start[0])
 	{
-	case '&': return checkKeyword(1, 2, "&", TOKEN_AND); // and
+	case '&': return checkKeyword(1, 1, "&", TOKEN_AND); // and
 	case 'c': return checkKeyword(1, 4, "lass", TOKEN_CLASS);
 	case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
 	case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
@@ -158,6 +158,7 @@ static TokenType identifierType()
 	case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);
 	case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
 	case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+  case 'u': return checkKeyword(1, 2, "se", TOKEN_USE);
 	case 'v': return checkKeyword(1, 2, "ar", TOKEN_VAR);
 	case 'w': return checkKeyword(1, 4, "hile", TOKEN_WHILE);
 	case 'f':
@@ -198,7 +199,7 @@ static Token string()
 		advance();
 	}
 	
-	if (isAtEnd()) return errorToken("Unterminated string.");
+	if (isAtEnd()) return errorToken("Unterminated string: A string is missing a closing quote.");
 	
 	// The closing quote.
 	advance();

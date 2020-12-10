@@ -651,6 +651,7 @@ ParseRule rules[] = {
   [TOKEN_NIL]           = { literal,  NULL,   PREC_NONE },
   [TOKEN_OR]            = { NULL,     or_,    PREC_OR },
   [TOKEN_PRINT]         = { NULL,     NULL,   PREC_NONE },
+  [TOKEN_USE]           = { NULL,     NULL,   PREC_NONE },
   [TOKEN_RETURN]        = { NULL,     NULL,   PREC_NONE },
   [TOKEN_SUPER]         = { NULL,     NULL,   PREC_NONE },
   [TOKEN_THIS]          = { this_,    NULL,   PREC_NONE },
@@ -1052,6 +1053,11 @@ static void printStatement()
 	emitByte(OP_PRINT);
 }
 
+static void useStatement()
+{
+  emitByte(OP_USE);
+}
+
 /* Compile a function return statement */
 static void returnStatement()
 {
@@ -1175,7 +1181,10 @@ static void statement()
 		beginScope();
 		block();
 		endScope();
-	}
+	} else if (match(TOKEN_USE)) 
+  {
+    useStatement();
+  }
 	else
 	{
 		expressionStatement();

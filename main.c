@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "vm.h"
 #include "repl.h"
+#include "preproc.h"
 
 /* current version */
 #define MT_VERSION "1.3.2"
@@ -79,6 +80,7 @@ static char* readFile(const char* path)
 	return buffer;
 }
 
+
 static void runFile(const char* path)
 {
   int len = (int) strlen(path);
@@ -89,6 +91,7 @@ static void runFile(const char* path)
   {
     source = readLiterate(source);
   }
+  getImports(source);
   InterpretResult result = interpret(source);
   free(source); 
   

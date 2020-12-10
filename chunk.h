@@ -8,6 +8,7 @@
 typedef enum
 {
     OP_CONSTANT, // a number
+    OP_IMPORT,
     OP_NIL,
     OP_TRUE,
     OP_FALSE,
@@ -30,6 +31,7 @@ typedef enum
     OP_NEGATE,   // -number
     OP_INCR,     // ++
     OP_PRINT,
+    OP_USE,
     OP_JUMP,
     OP_JUMP_IF_FALSE,
     OP_LOOP,

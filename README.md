@@ -158,6 +158,55 @@ fn fib(n)
 }
 ```
 
+### 11. Classes and Objects
+Classes are defined slightly differently to most languages
+```
+
+class Person 
+{
+  init(name, age) 
+  {
+    this.name = name;
+    this.age = age;
+  }
+
+  speak() 
+  {
+    print "Hello, I am " + this.name;
+  }
+
+  sayage() 
+  {
+    print "I am " + string(age) + " years old";
+  }
+}
+
+var bob = Person("Bob", 20);
+bob.speak();
+bob.sayage();
+bob.age = 21;
+bob.sayage();
+
+```
+
+### 12. Importing Code
+Lets say you have a file called `hello.mt` with the following code in it:
+```
+fn sayHello(name) 
+{
+  print "Hello " + name;
+}
+```
+A second file `main.mt` can use the code in `hello.mt` as such
+```
+use "hello.mt";
+
+sayHello("Bob");
+```
+
+***NOTE*** --- There is NO protection from infinite import loops - be careful! Alsi make sure the files are in the same folder, if they are not put the absoloute path to the file in the string
+
+
 ## Advanced Examples
 
 ### FizzBuzz

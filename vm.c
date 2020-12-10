@@ -22,6 +22,7 @@ array—we simply won’t access them until after values have been stored in the
 The only initialization we need is to set stackTop to point to the beginning of
 the array to indicate that the stack is empty.
 */
+
 static void resetStack() {
   vm.stackTop = vm.stack;
   vm.frameCount = 0;
@@ -322,7 +323,7 @@ static int run() {
     }
     printf("\n");
     disassembleInstruction(&frame->closure->function->chunk,
-                           (int)(frame->ip - frame->function->chunk.code));
+                           (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
     uint8_t instruction;
     switch (instruction = READ_BYTE()) {
@@ -331,6 +332,7 @@ static int run() {
       push(constant);
       break;
     }
+
     case OP_NIL:
       push(NIL_VAL);
       break;
@@ -638,6 +640,11 @@ static int run() {
       break;
     }
 
+    case OP_USE: 
+    {
+      break;
+    }
+
     case OP_JUMP: {
       uint16_t offset = READ_SHORT();
       frame->ip += offset;
@@ -797,7 +804,7 @@ static int run() {
     case OP_RETURN: {
       Value result = pop();
 
-	  closeUpvalues(frame->slots);
+	    closeUpvalues(frame->slots);
 
       vm.frameCount--;
       if (vm.frameCount == 0) {
