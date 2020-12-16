@@ -1,8 +1,8 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -68,8 +68,8 @@ void initVM() {
   initTable(&vm.strings);
   initTable(&vm.globals);
 
-	vm.initString = NULL;
-	vm.initString = copyString("init", 4);	
+  vm.initString = NULL;
+  vm.initString = copyString("init", 4);
 
   /* System */
   defineNative("clock", clockNative);
@@ -83,7 +83,6 @@ void initVM() {
   defineNative("clear", clearNative);
   defineNative("show", showNative);
   defineNative("Cd", cdNative);
-  defineNative("Ls", lsNative);
 
   /* Printing */
   defineNative("printf", printfNative);
@@ -99,7 +98,7 @@ void initVM() {
 void freeVM() {
   freeTable(&vm.globals);
   freeTable(&vm.strings);
-	vm.initString = NULL;
+  vm.initString = NULL;
   freeObjects();
 }
 
@@ -133,28 +132,23 @@ static bool callValue(Value callee, int argCount) {
   if (IS_OBJ(callee)) {
     switch (OBJ_TYPE(callee)) {
 
-    case OBJ_BOUND_METHOD: 
-    {
-      ObjBoundMethod* bound = AS_BOUND_METHOD(callee);
+    case OBJ_BOUND_METHOD: {
+      ObjBoundMethod *bound = AS_BOUND_METHOD(callee);
       vm.stackTop[-argCount - 1] = bound->reciever;
-      return call(bound->method, argCount);  
+      return call(bound->method, argCount);
     }
 
-    case OBJ_CLASS: 
-    {
-        ObjClass* klass = AS_CLASS(callee);
-        vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));    
-				Value initializer;
-				if (tableGet(&klass->methods, vm.initString, &initializer)) 
-				{		
-					return call(AS_CLOSURE(initializer), argCount);
-				}
-				else if (argCount != 0)
-				{
-					runtimeError("Expected 0 arguments but got %d.", argCount);
-					return false;
-				}
-        return true;
+    case OBJ_CLASS: {
+      ObjClass *klass = AS_CLASS(callee);
+      vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
+      Value initializer;
+      if (tableGet(&klass->methods, vm.initString, &initializer)) {
+        return call(AS_CLOSURE(initializer), argCount);
+      } else if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d.", argCount);
+        return false;
+      }
+      return true;
     }
     case OBJ_CLOSURE:
       return call(AS_CLOSURE(callee), argCount);
@@ -175,9 +169,8 @@ static bool callValue(Value callee, int argCount) {
   return false;
 }
 
-
 /* Same as invoke but from class */
-static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
+static bool invokeFromClass(ObjClass *klass, ObjString *name, int argCount) {
   Value method;
   if (!tableGet(&klass->methods, name, &method)) {
     runtimeError("Undefined property '%s'.", name->chars);
@@ -188,21 +181,18 @@ static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
 }
 
 /* Invoke methods optimiser */
-static bool invoke(ObjString* name, int argCount) 
-{
+static bool invoke(ObjString *name, int argCount) {
   Value receiver = peek(argCount);
-	
-	if (!IS_INSTANCE(receiver)) 
-	{
-		runtimeError("Only instances have methods");
-		return false;
-	}
 
-  ObjInstance* instance = AS_INSTANCE(receiver);
+  if (!IS_INSTANCE(receiver)) {
+    runtimeError("Only instances have methods");
+    return false;
+  }
+
+  ObjInstance *instance = AS_INSTANCE(receiver);
 
   Value value;
-  if (tableGet(&instance->fields, name, &value)) 
-  {
+  if (tableGet(&instance->fields, name, &value)) {
     vm.stackTop[-argCount - 1] = value;
     return callValue(value, argCount);
   }
@@ -211,70 +201,60 @@ static bool invoke(ObjString* name, int argCount)
 }
 
 /* Runtime code for bound methods of classes */
-static bool bindMethod(ObjClass* klass, ObjString* name) 
-{
+static bool bindMethod(ObjClass *klass, ObjString *name) {
   Value method;
-  if (!tableGet(&klass->methods, name, &method)) 
-  {
+  if (!tableGet(&klass->methods, name, &method)) {
     runtimeError("Undefined property '%s'.", name->chars);
     return false;
   }
-  ObjBoundMethod* bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+  ObjBoundMethod *bound = newBoundMethod(peek(0), AS_CLOSURE(method));
 
   pop();
   push(OBJ_VAL(bound));
   return true;
 }
 
-static ObjUpvalue* captureUpvalue(Value* local) 
-{
-    ObjUpvalue* prevUpvalue = NULL;
-    ObjUpvalue* upvalue = vm.openUpvalues;
+static ObjUpvalue *captureUpvalue(Value *local) {
+  ObjUpvalue *prevUpvalue = NULL;
+  ObjUpvalue *upvalue = vm.openUpvalues;
 
-    while (upvalue != NULL && upvalue->location > local) 
-    {
-        prevUpvalue = upvalue;
-        upvalue = upvalue->next;
-    }
+  while (upvalue != NULL && upvalue->location > local) {
+    prevUpvalue = upvalue;
+    upvalue = upvalue->next;
+  }
 
-    if (upvalue != NULL && upvalue-> location == local) 
-    {
-        return upvalue;
-    }
+  if (upvalue != NULL && upvalue->location == local) {
+    return upvalue;
+  }
 
-    ObjUpvalue* createdUpvalue = newUpvalue(local);
+  ObjUpvalue *createdUpvalue = newUpvalue(local);
 
-    createdUpvalue->next = upvalue;
+  createdUpvalue->next = upvalue;
 
-    if (prevUpvalue == NULL) 
-    {
-        vm.openUpvalues = createdUpvalue;
-    } 
-    else 
-    {
-        prevUpvalue->next = createdUpvalue;
-    }
+  if (prevUpvalue == NULL) {
+    vm.openUpvalues = createdUpvalue;
+  } else {
+    prevUpvalue->next = createdUpvalue;
+  }
 
-    return createdUpvalue;
+  return createdUpvalue;
 }
 
-static void closeUpvalues(Value* last) {
+static void closeUpvalues(Value *last) {
   while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last) {
-    ObjUpvalue* upvalue = vm.openUpvalues;
+    ObjUpvalue *upvalue = vm.openUpvalues;
     upvalue->closed = *upvalue->location;
     upvalue->location = &upvalue->closed;
     vm.openUpvalues = upvalue->next;
   }
 }
 
-static void defineMethod(ObjString* name) {
+static void defineMethod(ObjString *name) {
   Value method = peek(0);
-  ObjClass* klass = AS_CLASS(peek(1));
+  ObjClass *klass = AS_CLASS(peek(1));
   tableSet(&klass->methods, name, method);
   pop();
 }
-
-
 
 static bool isFalsey(Value value) {
   return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
@@ -322,8 +302,9 @@ static int run() {
       printf(" ]");
     }
     printf("\n");
-    disassembleInstruction(&frame->closure->function->chunk,
-                           (int)(frame->ip - frame->closure->function->chunk.code));
+    disassembleInstruction(
+        &frame->closure->function->chunk,
+        (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
     uint8_t instruction;
     switch (instruction = READ_BYTE()) {
@@ -388,59 +369,51 @@ static int run() {
       break;
     }
 
-    case OP_GET_UPVALUE: 
-    {
-        uint8_t slot = READ_BYTE();
-        push(*frame->closure->upvalues[slot]->location);
-        break;
+    case OP_GET_UPVALUE: {
+      uint8_t slot = READ_BYTE();
+      push(*frame->closure->upvalues[slot]->location);
+      break;
     }
 
-    case OP_SET_UPVALUE: 
-    {
-        uint8_t slot = READ_BYTE();
-        *frame->closure->upvalues[slot]->location = peek(0);
-        break;
+    case OP_SET_UPVALUE: {
+      uint8_t slot = READ_BYTE();
+      *frame->closure->upvalues[slot]->location = peek(0);
+      break;
     }
 
-    case OP_GET_PROPERTY: 
-    {
-        if (!IS_INSTANCE(peek(0))) 
-        {
-            runtimeError("Only instances have properties.");
-            return INTERPRET_RUNTIME_ERROR;
-        }
-        ObjInstance* instance = AS_INSTANCE(peek(0));
-        ObjString* name = READ_STRING();
+    case OP_GET_PROPERTY: {
+      if (!IS_INSTANCE(peek(0))) {
+        runtimeError("Only instances have properties.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      ObjInstance *instance = AS_INSTANCE(peek(0));
+      ObjString *name = READ_STRING();
 
-        Value value;
-        if (tableGet(&instance->fields, name, &value)) 
-        {
-            pop();
-            push(value);
-            break;
-        }
-
-        if (!bindMethod(instance->klass, name)) 
-        {
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        break;
-    }
-
-    case OP_SET_PROPERTY: 
-    {
-        if (!IS_INSTANCE(peek(1))) 
-        {
-            runtimeError("Only instances have fields.");
-            return INTERPRET_RUNTIME_ERROR;
-        }
-        ObjInstance* instance = AS_INSTANCE(peek(1));
-        tableSet(&instance->fields, READ_STRING(), peek(0));
-
-        Value value = pop();
+      Value value;
+      if (tableGet(&instance->fields, name, &value)) {
         pop();
         push(value);
         break;
+      }
+
+      if (!bindMethod(instance->klass, name)) {
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      break;
+    }
+
+    case OP_SET_PROPERTY: {
+      if (!IS_INSTANCE(peek(1))) {
+        runtimeError("Only instances have fields.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      ObjInstance *instance = AS_INSTANCE(peek(1));
+      tableSet(&instance->fields, READ_STRING(), peek(0));
+
+      Value value = pop();
+      pop();
+      push(value);
+      break;
     }
 
     case OP_EQUAL: {
@@ -640,8 +613,7 @@ static int run() {
       break;
     }
 
-    case OP_USE: 
-    {
+    case OP_USE: {
       break;
     }
 
@@ -678,32 +650,27 @@ static int run() {
       ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
       ObjClosure *closure = newClosure(function);
       push(OBJ_VAL(closure));
-      for (int i = 0; i < closure->upvalueCount; i++) 
-      {
+      for (int i = 0; i < closure->upvalueCount; i++) {
         uint8_t isLocal = READ_BYTE();
         uint8_t index = READ_BYTE();
-        if (isLocal) 
-        {
-            closure->upvalues[i] = captureUpvalue(frame->slots + index);
-        } else 
-        {
-            closure->upvalues[i] = frame->closure->upvalues[index];
+        if (isLocal) {
+          closure->upvalues[i] = captureUpvalue(frame->slots + index);
+        } else {
+          closure->upvalues[i] = frame->closure->upvalues[index];
         }
       }
       break;
     }
 
-    case OP_INVOKE: 
-    {
-      ObjString* method = READ_STRING();
+    case OP_INVOKE: {
+      ObjString *method = READ_STRING();
       int argCount = READ_BYTE();
-      if (!invoke(method, argCount)) 
-      {
+      if (!invoke(method, argCount)) {
         return INTERPRET_RUNTIME_ERROR;
       }
       frame = &vm.frames[vm.frameCount - 1];
       break;
-    } 
+    }
 
     case OP_BUILD_LIST: {
       ObjList *list = newList();
@@ -732,36 +699,27 @@ static int run() {
         ObjList *list = AS_LIST(indexable);
 
         if (!IS_NUMBER(index)) {
-            runtimeError("List index is not a number.");
-            return INTERPRET_RUNTIME_ERROR;
-        }
-        else if (!isValidListIndex(list, AS_NUMBER(index))) 
-        {
-            runtimeError("List index out of range.");
-            return INTERPRET_RUNTIME_ERROR;
+          runtimeError("List index is not a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        } else if (!isValidListIndex(list, AS_NUMBER(index))) {
+          runtimeError("List index out of range.");
+          return INTERPRET_RUNTIME_ERROR;
         }
         result = indexFromList(list, AS_NUMBER(index));
-      } 
-      else if (IS_STRING(indexable)) 
-      {
-        ObjString* string = AS_STRING(indexable);
-        if (!IS_NUMBER(index)) 
-        {
-            runtimeError("String index is not a number");
-            return INTERPRET_RUNTIME_ERROR;
-        } else if (!isValidStringIndex(string, AS_NUMBER(index))) 
-        {
-            runtimeError("String index out of range");
-            return INTERPRET_RUNTIME_ERROR; 
+      } else if (IS_STRING(indexable)) {
+        ObjString *string = AS_STRING(indexable);
+        if (!IS_NUMBER(index)) {
+          runtimeError("String index is not a number");
+          return INTERPRET_RUNTIME_ERROR;
+        } else if (!isValidStringIndex(string, AS_NUMBER(index))) {
+          runtimeError("String index out of range");
+          return INTERPRET_RUNTIME_ERROR;
         }
         result = indexFromString(string, AS_NUMBER(index));
-      } 
-      else 
-      {
+      } else {
         runtimeError("Object is not indexable");
         return INTERPRET_RUNTIME_ERROR;
       }
-
 
       push(result);
       break;
@@ -794,17 +752,16 @@ static int run() {
       break;
     }
 
-    case OP_CLOSE_UPVALUE: 
-    {
-        closeUpvalues(vm.stackTop - 1);
-        pop();
-        break;        
+    case OP_CLOSE_UPVALUE: {
+      closeUpvalues(vm.stackTop - 1);
+      pop();
+      break;
     }
 
     case OP_RETURN: {
       Value result = pop();
 
-	    closeUpvalues(frame->slots);
+      closeUpvalues(frame->slots);
 
       vm.frameCount--;
       if (vm.frameCount == 0) {
@@ -820,12 +777,12 @@ static int run() {
     }
 
     case OP_CLASS:
-        push(OBJ_VAL(newClass(READ_STRING())));
-        break;
+      push(OBJ_VAL(newClass(READ_STRING())));
+      break;
 
     case OP_METHOD:
-        defineMethod(READ_STRING());
-        break;
+      defineMethod(READ_STRING());
+      break;
     }
   }
 #undef READ_BYTE
