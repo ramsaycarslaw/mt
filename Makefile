@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -c -std=c99 -g -Wall -O3 -funsafe-math-optimizations
+CFLAGS = -c -std=c99 -g -lm -Wall -O3 -funsafe-math-optimizations
 LDFLAGS = -g
 SRC = $(wildcard ./*.c)
 HDR = $(wildcard ./*.h)
