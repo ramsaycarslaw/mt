@@ -24,6 +24,10 @@ install: $(EXEC)
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/mt
 
+.PHONY: check
+check:
+	./test/test
+
 clean:
 	rm *.o $(EXEC)
 

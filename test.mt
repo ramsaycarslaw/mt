@@ -1,3 +1,3 @@
-use "test1.mt";
+use "vec.mt";
 
-sayHello("Ramsay");
+print "Hello World";

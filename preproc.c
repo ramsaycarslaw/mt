@@ -3,11 +3,25 @@
 
 static char* readFile(const char* path)
 {
-	FILE* file = fopen(path, "rb");
+	FILE* file;
+  file = fopen(path, "rb");
 	if (file == NULL)
 	{
-		fprintf(stderr, "Could not open file \"%s\".\n", path);
-		exit(74);
+    char * mt_path = "$HOME/.mtlib/stdlib/";
+    char * final_path = malloc(sizeof(char)*(strlen(mt_path)+strlen(path)));
+    
+    strcat(final_path, mt_path);
+    strcat(final_path, path);
+
+    file = fopen(final_path, "rb");
+
+    if (file == NULL) 
+    {
+      printf("Your mt library path is not configured correctly, to fix this run:\n");
+      printf("> mkdir -p ~/.mtlib/stdlib/\n");
+		  fprintf(stderr, "Could not open file \"%s\".\n", final_path);
+		  exit(74);
+    }
 	}
 	
 	fseek(file, 0L, SEEK_END);

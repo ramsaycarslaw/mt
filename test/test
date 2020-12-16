@@ -1,0 +1,11 @@
+#!/bin/sh
+
+MT=$(./mt test/test.mt)
+ACTUAL=$(echo "499500")
+
+if [ "$MT" == "$ACTUAL" ]
+then
+    echo "Ok, test passed"
+else
+    echo "Test failed"
+fi
