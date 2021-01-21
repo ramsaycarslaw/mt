@@ -39,6 +39,9 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 	return result;
 }
 
+/* freeObject is a method used to return the memory allocated 
+ * by any of mt's internal objects such as stings and functions 
+ * and others */
 static void freeObject(Obj* object)
 {
     switch (object->type)

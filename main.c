@@ -23,6 +23,8 @@ static void repl()
     return;    
 }
 
+/* Reads a literate value from the source code 
+ * Used to handle use statements */
 static char *readLiterate(const char * src)
 {
   printf("Entering literate mode\n");

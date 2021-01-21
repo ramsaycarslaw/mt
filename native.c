@@ -47,12 +47,22 @@ static void warn(int expected, int argCount, const char *name) {
   printf("Expected %d arguments to %s(), got %d.\n", expected, name, argCount);
 }
 
-/* Provides the clock */
+/* Provides the clock functionality a wrapper for C native */
 Value clockNative(int argCount, Value *args) {
   return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
-/* read a file */
+/* Provides a built in sleep function */
+Value sleepNative(int argCount, Value *args) {
+  if (argCount != 1) {
+    warn(1, argCount, "sleep()");
+    exit(74);
+  }
+  sleep(AS_NUMBER(args[0]));
+  return NUMBER_VAL(0);
+}
+
+/* read a file  and return it as a an mt string */
 Value readNative(int argCount, Value *args) {
   if (argCount != 1) {
     warn(1, argCount, "read");
@@ -82,6 +92,7 @@ Value writeNative(int argCount, Value *args) {
   return NUMBER_VAL(0);
 }
 
+/* A wrapper for the C native random method  */
 Value randIntNative(int argCount, Value *args) {
   if (argCount != 2) {
     warn(2, argCount, "randInt");

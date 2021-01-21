@@ -9,6 +9,7 @@
 #include "vm.h"
 
 Value clockNative(int argCount, Value *args);
+Value sleepNative(int argCount, Value *args);
 Value readNative(int argCount, Value *args);
 Value writeNative(int argCount, Value *args);
 Value randIntNative(int argcount, Value *args);
