@@ -2,6 +2,7 @@
 
 > C meets Python... one day
 
+![C Build](https://github.com/ramsaycarslaw/mt/workflows/github/workflows/c-cpp.yml/badge.svg)
 ## Install
 
 ### macOS
