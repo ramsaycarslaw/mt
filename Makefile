@@ -1,8 +1,8 @@
 CC = clang
 CFLAGS = -c -std=c99 -g -Wall -O3 -funsafe-math-optimizations
 LDFLAGS = -g
-SRC = $(wildcard ./*.c)
-HDR = $(wildcard ./*.h)
+SRC = $(wildcard ./src/*.c)
+HDR = $(wildcard ./include/*.h)
 OBJ = $(SRC:.c=.o)
 EXEC = mt
 PREFIX = /usr/local
