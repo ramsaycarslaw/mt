@@ -14,7 +14,7 @@ make install
 ```
 
 ### GNU/Linux
-equires a small modification to the Makefile as well as having gcc and make installed. In the Makefile: change 
+Linux requires a small modification to the Makefile as well as having gcc and make installed. In the Makefile: change 
 ```
 CC = clang
 ```
@@ -32,7 +32,7 @@ make install
 
 ## Uninstall
 
-To uninstall mt, navigate the the directory with the makefile and run:
+To uninstall mt, navigate to the directory with the makefile and run:
 ```
 make uninstall
 ```
@@ -49,12 +49,12 @@ Or pass in a file with:
 ./mt path/to/file
 ```
 
-Alternativley you can copy the mt executable to /usr/local/bin/ to make it avaliable system wide.
+Alternatively, you can copy the mt executable to /usr/local/bin/ to make it available system wide.
 
 ## Simple Examples
 
 ### 1. Hello World
-Hello world can be done in two ways, impertivley or as a function (best practice).
+Hello world can be done in two ways, imperatively or as a function (best practice).
 ```
 // imperative
 print "Hello, World!";
@@ -87,14 +87,14 @@ if (ok == 1)
 ```
 
 ### 4. Working with strings
-You can add stwo strings together with the plus operator
+You can add two strings together with the plus operator
 ```
 var str1 = "Hello, ";
 var str2 = str1 + "World!";
 print str2;
 ```
 ### 5. Working with time
-You can use the system clock to profile the exectution of functions
+You can use the system clock to profile the execution of functions
 ```
 var start = clock();
 someFunction();
@@ -109,7 +109,7 @@ var b2 = false;
 print !(b1 && b2 || !b1)
 ```
 ### 7. if/else 
-The prefered mt style is to put the braces on a new line
+# The preferred mt style is to put the braces on a new line
 ```
 var temp = 30;
 
@@ -146,7 +146,7 @@ for (var i = 0; i < 10; i = i + 1)
 ```
 
 ### 10. functions
-Functions are most similar to python in thier declaration
+Functions are most similar to python in their declaration
 ```
 fn fib(n) 
 {
@@ -204,13 +204,13 @@ use "hello.mt";
 sayHello("Bob");
 ```
 
-***NOTE*** --- There is NO protection from infinite import loops - be careful! Alsi make sure the files are in the same folder, if they are not put the absoloute path to the file in the string
+***NOTE*** --- There is NO protection from infinite import loops - be careful! Also make sure the files are in the same folder, if they are not put the absolute path to the file in the string
 
 
 ## Advanced Examples
 
 ### FizzBuzz
-The fizzBuzz problrm is a classic interview question. In mt it can be solved like so:
+The fizzBuzz problem is a classic interview question. In mt it can be solved like so:
 ```
 // fizzBuzz where n is the max number
 fn fizzBuzz(n) 
@@ -290,6 +290,8 @@ fn main()
 | number(*value*) -> *number*       | changes any type to a number                 |
 | string(*value*) -> *string*       | changes numbers and bools to string literals |
 | raw()                             | Raw puts the shell in raw mode               |
+| sleep(n)                          | Sleep for n seconds                          |
+| println(s) & printf(s)            | works like C's printf                        |
 
 ## ToDo
 > In no particular order
@@ -298,7 +300,7 @@ fn main()
 - [x] String Subscript Get
 - [ ] String Subscript Set
 - [x] Text editor (see https://github.com/ramsaycarslaw/charm)
-- [ ] Classes
+- [x] Classes
 - [ ] Standard libary
     - [ ] std linear algebra
     - [ ] std string manip
