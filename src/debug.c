@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#include "debug.h"
-#include "object.h"
-#include "value.h"
+#include "../include/debug.h"
+#include "../include/object.h"
+#include "../include/value.h"
 
 /* Give a chunk a name and view it in a human-readble way */
 void disassembleChunk(Chunk *chunk, const char *name) {

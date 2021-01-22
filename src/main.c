@@ -5,12 +5,12 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "common.h"
-#include "chunk.h"
-#include "debug.h"
-#include "vm.h"
-#include "repl.h"
-#include "preproc.h"
+#include "../include/common.h"
+#include "../include/chunk.h"
+#include "../include/debug.h"
+#include "../include/vm.h"
+#include "../include/repl.h"
+#include "../include/preproc.h"
 
 /* current version */
 #define MT_VERSION "1.3.2"

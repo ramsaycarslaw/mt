@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "chunk.h"
-#include "memory.h"
+#include "../include/chunk.h"
+#include "../include/memory.h"
 
 /* Initialise a new chunk to zero values */
 void initChunk(Chunk *chunk)

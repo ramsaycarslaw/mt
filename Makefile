@@ -4,7 +4,7 @@ LDFLAGS = -g
 SRC = $(wildcard ./src/*.c)
 HDR = $(wildcard ./include/*.h)
 OBJ = $(SRC:.c=.o)
-EXEC = mt
+EXEC = ./bin/mt
 PREFIX = /usr/local
 
 all: $(SRC) $(OBJ) $(EXEC)
@@ -29,6 +29,6 @@ check:
 	./test/test
 
 clean:
-	rm *.o $(EXEC)
+	rm ./src/*.o $(EXEC)
 
 

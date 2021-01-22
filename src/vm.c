@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
-#include "compiler.h"
-#include "debug.h"
-#include "memory.h"
-#include "native.h"
-#include "object.h"
-#include "vm.h"
+#include "../include/common.h"
+#include "../include/compiler.h"
+#include "../include/debug.h"
+#include "../include/memory.h"
+#include "../include/native.h"
+#include "../include/object.h"
+#include "../include/vm.h"
 
 /* Maybe take a pointer later to remove the global variable */
 VM vm;

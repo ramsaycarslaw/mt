@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "memory.h"
-#include "vm.h"
+#include "../include/memory.h"
+#include "../include/vm.h"
 
 /* 
 reallocate is the main function used by mt for many 

@@ -1,4 +1,4 @@
-#include "repl.h"
+#include "../include/repl.h"
 
 #define MT_RL_BUFSIZE 1024
 

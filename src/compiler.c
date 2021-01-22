@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "common.h"
-#include "compiler.h"
-#include "object.h"
-#include "scanner.h"
+#include "../include/common.h"
+#include "../include/compiler.h"
+#include "../include/object.h"
+#include "../include/scanner.h"
 
 #ifdef MT_DEBUG_PRINT_CODE
-#include "debug.h"
+#include "../include/debug.h"
 #endif
 
 /* main struct to store the parser */

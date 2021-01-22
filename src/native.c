@@ -6,7 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "native.h"
+#include "../include/native.h"
 
 #define BUFFERSIZE 256
 

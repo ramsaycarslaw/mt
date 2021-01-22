@@ -1,5 +1,5 @@
-#include "preproc.h"
-#include "vm.h"
+#include "../include/preproc.h"
+#include "../include/vm.h"
 
 static char* readFile(const char* path)
 {
