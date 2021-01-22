@@ -10,10 +10,10 @@ PREFIX = /usr/local
 all: $(SRC) $(OBJ) $(EXEC)
 
 $(EXEC): $(OBJ)
-	$(CC) $(LDFLAGS) $^ -o $@
+	$(CC) $(LDFLAGS) $^ -o $@ -lm
 
 %.o: %.c $(HDR)
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@ 
 
 .PHONY: install
 install: $(EXEC)
