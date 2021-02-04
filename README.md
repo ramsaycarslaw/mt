@@ -2,7 +2,8 @@
 
 > C meets Python... one day
 
-![C Build](https://github.com/ramsaycarslaw/mt/workflows/C-C++%20CLI/badge.svg)
+![C Build](https://github.com/ramsaycarslaw/mt/blob/master/.github/workflows/c-cpp.yml/badge.svg)
+![Code Quality](https://github.com/ramsaycarslaw/mt/blob/master/.github/workflows/codeql-analysis.yml/badge.svg)
 ## Install
 
 ### macOS
