@@ -85,9 +85,6 @@ Alternativley, change the CC line in the Makefile to whatever C compiler you use
 \subsection{Windows}
 I don't have a windows machine to test any of this on but you will have to compile from source.
 
-\section{Contributing to MT}
-MT is open source and can be found on github. All help is apreciated as MT does not yet nativley support arrays. This is the killer feature that needs to be added before MT can become a seroius language. The current plan is to implemet arrays in MT using classes but a more permenant soloution needs to be found.
-
 \chapter{The Basics}
 \section{Saying Hello}
 \subsection{Hello World}
@@ -142,8 +139,71 @@ There is no need to specify integers or floats in mt. This is becuase it is dyna
 \end{lstlisting}
 
 \section{The Truth, The Whole Truth and Nothing but the Truth}
-Booleans are also,
+Booleans are also, fully supported in mt, the syntax for which is familiar to anyone who has used a C-style langauge before.
+
+\begin{lstlisting}
+  mt> print 10 == 12;
+  false
+  mt> print 10 != 12;
+  true
+  mt> print !((10 != 12) && (10 == 12));
+  true
+\end{lstlisting}
+
+The basic operators are, equity \texttt{==} which checks that two values are the same.
+Non-equatity \texttt{!=} which verifys that two values are not the same.
+And (\texttt{\&\&}), Or (\texttt{||}) and Not (\texttt{!}).
 
 \section{My Type}
+There are several types in mt although many are abstracted for the sake of ease of use. For example there is no concept of integers and floating point numbers there is just the general \texttt{number} type. mt is dynamically typed which means the type of variables can change during runtime (think python). This removes type errors completly from the equation although you cannot disregard it enteirly if you are writing a library. All variables are created with the \texttt{var} keywword. Some examples are shown below.
+
+\begin{lstlisting}
+
+var name = "The mt Programming Language";      // string
+var age = 0.8;                                 // number
+var active = true;                             // boolean
+var keywords = ["if", "else", "while", "for"]; // string array
+
+\end{lstlisting}
+
+After you have declared a variable you can update its value without the \texttt{var} keyword and change it to any other type.
+
+\chapter{Advice on writing librarys}
+
+\section{The use keyword}
+If you have chosen to write a library, first of all: thank you! Second there are some things you should consider. First of all the \texttt{use} keyword.
+The \texttt{use} keyword is for importing code and splitting projects across multiple files. It must be followed by a string with the \emph{absoloute path} to the file you wish to include (note: this may change in the future as we introduce the concept of a standard library).
+
+Currently, \texttt{use} should be considered unsafe, it is like C's \texttt{include} but without header guards. For this reason make sure you have no import loops in your code or your program will break.
+
+\subsection{Syntax}
+Below is an example of how to create a simple math library.
+
+\subsubsection{File: math.mt}
+\begin{lstlisting}
+  // math.mt
+
+  fn square(x) 
+  {
+    return x*x;
+  }
+\end{lstlisting}
+
+\subsubsection{File: main.mt}
+
+\begin{lstlisting}
+  // main.mt
+
+  // main.mt is in the same folder as a directory called math
+  // math.mt is inside that folder
+  use "./math/math.mt";
+
+
+  print square(10);
+\end{lstlisting}
+
+\section{Type Checking}
+
+If you are writing a library you may notice that you need to validate the types of some of your functions. Better type checking functions are being worked on but in the meantie the best advice is to document well and use the casting functions wherever possible.
 
 \end{document}
