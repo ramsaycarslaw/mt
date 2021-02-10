@@ -89,6 +89,7 @@ void initVM() {
   defineNative("printf", printfNative);
   defineNative("println", printlnNative);
   defineNative("color", colorSetNative);
+  defineNative("bg", bgSetNative);
 
   /* Arrays */
   defineNative("append", appendNative);

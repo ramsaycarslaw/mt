@@ -23,6 +23,7 @@ Value cdNative(int argCount, Value *args);
 Value printfNative(int argCount, Value *args);
 Value printlnNative(int argCount, Value *args);
 Value colorSetNative(int argCount, Value *args);
+Value bgSetNative(int argCount, Value *args);
 Value appendNative(int argCount, Value *args);
 Value deleteNative(int argCount, Value *args);
 Value lenNative(int argCount, Value *args);

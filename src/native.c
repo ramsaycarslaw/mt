@@ -320,7 +320,7 @@ Value printlnNative(int argCount, Value *args) {
 /* Print with more colors */
 Value colorSetNative(int argCount, Value *args) {
   if (argCount < 2) {
-    printf("Not enough arguments to pretty");
+    printf("Not enough arguments to color");
   }
 
   char *color = AS_CSTRING(args[0]);
@@ -349,6 +349,34 @@ Value colorSetNative(int argCount, Value *args) {
   }
   return NUMBER_VAL(0);
 }
+
+
+/* Print with more colors */
+Value bgSetNative(int argCount, Value *args) {
+  if (argCount < 1) {
+    printf("Not enough arguments to color");
+  }
+
+  char *color = AS_CSTRING(args[0]);
+
+  if (strcmp(color, "red") == 0 || strcmp(color, "r") == 0) {
+    printf("\033[41m");
+  } else if (strcmp(color, "green") == 0 || strcmp(color, "g") == 0) {
+    printf("\033[42m");
+  } else if (strcmp(color, "yellow") == 0 || strcmp(color, "y") == 0) {
+    printf("\033[43m");
+  } else if (strcmp(color, "blue") == 0 || strcmp(color, "b") == 0) {
+    printf("\033[44m");
+  } else if (strcmp(color, "magenta") == 0 || strcmp(color, "m") == 0) {
+    printf("\033[45m");
+  } else if (strcmp(color, "cyan") == 0 || strcmp(color, "c") == 0) {
+    printf("\033[46m");
+  } else {
+    printf("\033[0m");
+  }
+  return NUMBER_VAL(0);
+}
+
 
 // ------------------------------------------------------------
 //                     Array Natives
