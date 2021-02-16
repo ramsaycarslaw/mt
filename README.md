@@ -111,7 +111,8 @@ var b2 = false;
 print !(b1 && b2 || !b1)
 ```
 ### 7. if/else 
-# The preferred mt style is to put the braces on a new line
+
+The preferred mt style is to put the braces on a new line
 ```
 var temp = 30;
 
@@ -160,7 +161,8 @@ fn fib(n)
 }
 ```
 
-### 11. Classes and Objects
+### 11. Classes and Objects
+
 Classes are defined slightly differently to most languages
 ```
 
@@ -248,6 +250,34 @@ fn main()
     
     write("new file.txt", str);
 }
+```
+
+### Inheritance and the `super` method
+
+Objects can inherit methods and values from other classes using the inheritance opera
+. This is achieved using the `<` operator in a class name. The keyword `super` is used as a shorthand for inheritance.
+
+```
+
+class Shape {
+  init(area) {
+    this.area = area;
+  }
+}
+
+class Circle < Shape {
+  init(area) {
+    super.init(area);
+  }
+  
+  getRadius() {
+    return (this.area / 3.1415)^(1/2);
+  }
+}
+
+var c = Circle(100);
+print c.getRadius();
+
 ```
 
 ### Reference
