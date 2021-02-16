@@ -5,6 +5,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+/* Local libraries */
 #include "../include/common.h"
 #include "../include/chunk.h"
 #include "../include/debug.h"
@@ -76,8 +77,7 @@ static char* readFile(const char* path)
 	}
 	buffer[bytesRead] = '\0';
 
-	
-	
+
 	fclose(file);
 	return buffer;
 }
@@ -101,6 +101,7 @@ static void runFile(const char* path)
   if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
+/* Main loop that handles all the command line arguments and such */
 int main(int argc, char *argv[])
 {
 	initVM();
@@ -120,10 +121,10 @@ int main(int argc, char *argv[])
 	    
 	    for (int i = argc-1; i> 0; i--)
 	    {
-		FILE *fptr;
-		char ch;
+			FILE *fptr;
+			char ch;
 
-		fptr = fopen(argv[i], "r");
+			fptr = fopen(argv[i], "r");
 
 		if (fptr == NULL)
 		{

@@ -80,6 +80,7 @@ typedef struct Compiler {
 typedef struct ClassCompiler {
   struct ClassCompiler *enclosing;
   Token name;
+  bool hasSuperClass;
 } ClassCompiler;
 
 /* Global parser struct */
@@ -245,7 +246,7 @@ static void initCompiler(Compiler *compiler, FunctionType type) {
 
   if (type != TYPE_SCRIPT) {
     current->function->name =
-        copyString(parser.previous.start, parser.previous.length);
+      copyString(parser.previous.start, parser.previous.length);
   }
 
   Local *local = &current->locals[current->localCount++];
@@ -268,8 +269,8 @@ static ObjFunction *endCompiler() {
 #ifdef MT_DEBUG_PRINT_CODE
   if (!parser.hadError) {
     disassembleChunk(currentChunk(), function->name != NULL
-                                         ? function->name->chars
-                                         : "<script>");
+        ? function->name->chars
+        : "<script>");
   }
 #endif
 
@@ -285,7 +286,7 @@ static void endScope() {
   current->scopeDepth--;
 
   while (current->localCount > 0 &&
-         current->locals[current->localCount - 1].depth > current->scopeDepth) {
+      current->locals[current->localCount - 1].depth > current->scopeDepth) {
     if (current->locals[current->localCount - 1].isCaptured) {
       emitByte(OP_CLOSE_UPVALUE);
     } else {
@@ -316,44 +317,44 @@ static void binary(bool canAssign) {
 
   /* Emit the operator instruction. */
   switch (operatorType) {
-  case TOKEN_BANG_EQUAL:
-    emitBytes(OP_EQUAL, OP_NOT);
-    break;
-  case TOKEN_EQUAL_EQUAL:
-    emitByte(OP_EQUAL);
-    break;
-  case TOKEN_GREATER:
-    emitByte(OP_GREATER);
-    break;
-  case TOKEN_GREATER_EQUAL:
-    emitBytes(OP_LESS, OP_NOT);
-    break;
-  case TOKEN_LESS:
-    emitByte(OP_LESS);
-    break;
-  case TOKEN_LESS_EQUAL:
-    emitBytes(OP_GREATER, OP_NOT);
-    break;
-  case TOKEN_PLUS:
-    emitByte(OP_ADD);
-    break;
-  case TOKEN_MINUS:
-    emitByte(OP_SUBTRACT);
-    break;
-  case TOKEN_STAR:
-    emitByte(OP_MULTIPLY);
-    break;
-  case TOKEN_SLASH:
-    emitByte(OP_DIVIDE);
-    break;
-  case TOKEN_CARAT:
-    emitByte(OP_POW);
-    break;
-  case TOKEN_PERCENT:
-    emitByte(OP_MOD);
-    break;
-  default:
-    return; /* Unreachable. */
+    case TOKEN_BANG_EQUAL:
+      emitBytes(OP_EQUAL, OP_NOT);
+      break;
+    case TOKEN_EQUAL_EQUAL:
+      emitByte(OP_EQUAL);
+      break;
+    case TOKEN_GREATER:
+      emitByte(OP_GREATER);
+      break;
+    case TOKEN_GREATER_EQUAL:
+      emitBytes(OP_LESS, OP_NOT);
+      break;
+    case TOKEN_LESS:
+      emitByte(OP_LESS);
+      break;
+    case TOKEN_LESS_EQUAL:
+      emitBytes(OP_GREATER, OP_NOT);
+      break;
+    case TOKEN_PLUS:
+      emitByte(OP_ADD);
+      break;
+    case TOKEN_MINUS:
+      emitByte(OP_SUBTRACT);
+      break;
+    case TOKEN_STAR:
+      emitByte(OP_MULTIPLY);
+      break;
+    case TOKEN_SLASH:
+      emitByte(OP_DIVIDE);
+      break;
+    case TOKEN_CARAT:
+      emitByte(OP_POW);
+      break;
+    case TOKEN_PERCENT:
+      emitByte(OP_MOD);
+      break;
+    default:
+      return; /* Unreachable. */
   }
 }
 
@@ -366,7 +367,7 @@ static void call(bool canAssign) {
 /* Parse a get or set expression of an instance of a class */
 static void dot(bool canAssign) {
   consume(TOKEN_IDENTIFIER, "Expected property name after '.', make sure you "
-                            "are using it on a class.");
+      "are using it on a class.");
   uint8_t name = identifierConstant(&parser.previous);
 
   if (canAssign && match(TOKEN_EQUAL)) {
@@ -384,17 +385,17 @@ static void dot(bool canAssign) {
 /* Parse a function literal */
 static void literal(bool canAssign) {
   switch (parser.previous.type) {
-  case TOKEN_FALSE:
-    emitByte(OP_FALSE);
-    break;
-  case TOKEN_NIL:
-    emitByte(OP_NIL);
-    break;
-  case TOKEN_TRUE:
-    emitByte(OP_TRUE);
-    break;
-  default:
-    return; /* Unreachable. */
+    case TOKEN_FALSE:
+      emitByte(OP_FALSE);
+      break;
+    case TOKEN_NIL:
+      emitByte(OP_NIL);
+      break;
+    case TOKEN_TRUE:
+      emitByte(OP_TRUE);
+      break;
+    default:
+      return; /* Unreachable. */
   }
 }
 
@@ -426,7 +427,7 @@ static void or_(bool canAssign) {
 /* Parse a string */
 static void string(bool canAssign) {
   emitConstant(OBJ_VAL(
-      copyString(parser.previous.start + 1, parser.previous.length - 2)));
+        copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
 /* Parse a list */
@@ -449,7 +450,7 @@ static void list(bool canAssign) {
   }
 
   consume(TOKEN_RIGHT_BRACKET,
-          "Expected ']' after list literal, you should close the brackets.");
+      "Expected ']' after list literal, you should close the brackets.");
 
   emitByte(OP_BUILD_LIST);
   emitByte(itemCount);
@@ -460,7 +461,7 @@ static void list(bool canAssign) {
 static void subscript(bool canAssign) {
   parsePrecedence(PREC_OR);
   consume(TOKEN_RIGHT_BRACKET,
-          "Expected ']' after index, add ']' after the number to index to.");
+      "Expected ']' after index, add ']' after the number to index to.");
 
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();
@@ -487,7 +488,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal) {
 
   if (upvalueCount == UINT8_COUNT) {
     error("Too many closure variables in function, the limit is 256. Closures "
-          "are used for nested functions etc, try to split up your code.");
+        "are used for nested functions etc, try to split up your code.");
     return 0;
   }
 
@@ -545,6 +546,38 @@ static void variable(bool canAssign) {
   namedVariable(parser.previous, canAssign);
 }
 
+/* create a 'fake' keyword */
+static Token syntheticToken(const char* text) {
+  Token token;
+  token.start = text;
+  token.length = (int)strlen(text);
+  return token;
+}
+
+/* Parse super keyword */
+static void super_(bool canAssign) {
+  if (currentClass == NULL) {
+    error("Can't use 'super' outside of a class.");
+  } else if (!currentClass->hasSuperClass) {
+    error("Can't use 'super' in a class with no superclass.");
+  }
+
+  consume(TOKEN_DOT, "Expected '.' after 'super'.");
+  consume(TOKEN_IDENTIFIER, "Expected superclass method name.");
+  uint8_t name = identifierConstant(&parser.previous);
+
+  namedVariable(syntheticToken("this"), false);
+  if (match(TOKEN_LEFT_PAREN)) {
+    uint8_t argCount = argumentList();
+    namedVariable(syntheticToken("super"), false);
+    emitBytes(OP_SUPER_INVOKE, name);
+    emitByte(argCount);
+  } else {
+    namedVariable(syntheticToken("super"), false);
+    emitBytes(OP_GET_SUPER, name);
+  }
+}
+
 /* Parse a Unary operator ie. -a or !b */
 static void unary(bool canAssign) {
   TokenType operatorType = parser.previous.type;
@@ -554,24 +587,24 @@ static void unary(bool canAssign) {
 
   /* Emit the operator instruction. */
   switch (operatorType) {
-  case TOKEN_BANG:
-    emitByte(OP_NOT);
-    break;
-  case TOKEN_MINUS:
-    emitByte(OP_NEGATE);
-    break;
-  case TOKEN_PLUS_PLUS:
-    emitByte(OP_INCR);
-    break;
-  default:
-    return; // Unreachable.
+    case TOKEN_BANG:
+      emitByte(OP_NOT);
+      break;
+    case TOKEN_MINUS:
+      emitByte(OP_NEGATE);
+      break;
+    case TOKEN_PLUS_PLUS:
+      emitByte(OP_INCR);
+      break;
+    default:
+      return; // Unreachable.
   }
 }
 
 static void this_(bool canAssign) {
   if (currentClass == NULL) {
     error("'this' is a resevered keyword and as such cannot be used outside of "
-          "a class.");
+        "a class.");
     return;
   }
   variable(false);
@@ -579,57 +612,57 @@ static void this_(bool canAssign) {
 
 /* Stores infomation on how to parse tokens */
 ParseRule rules[] = {
-    [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
-    [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LEFT_BRACKET] = {list, subscript, PREC_SUBSCRIPT},
-    [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
-    [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
-    [TOKEN_DOT] = {NULL, dot, PREC_CALL},
-    [TOKEN_MINUS] = {unary, binary, PREC_TERM},
-    [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
-    [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
-    [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_CARAT] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_PERCENT] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_BANG] = {unary, NULL, PREC_NONE},
-    [TOKEN_PLUS_PLUS] =
-        {
-            unary,
-            unary,
-            PREC_NONE,
-        },
-    [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_EQUALITY},
-    [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
-    [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
-    [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
-    [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
-    [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
-    [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
-    [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
-    [TOKEN_STRING] = {string, NULL, PREC_NONE},
-    [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
-    [TOKEN_AND] = {NULL, and_, PREC_AND},
-    [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
-    [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
-    [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
-    [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_IF] = {NULL, NULL, PREC_NONE},
-    [TOKEN_NIL] = {literal, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, or_, PREC_OR},
-    [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
-    [TOKEN_USE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
-    [TOKEN_THIS] = {this_, NULL, PREC_NONE},
-    [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
-    [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
-    [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
-    [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
+  [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LEFT_BRACKET] = {list, subscript, PREC_SUBSCRIPT},
+  [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
+  [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
+  [TOKEN_DOT] = {NULL, dot, PREC_CALL},
+  [TOKEN_MINUS] = {unary, binary, PREC_TERM},
+  [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
+  [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
+  [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_CARAT] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_PERCENT] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_BANG] = {unary, NULL, PREC_NONE},
+  [TOKEN_PLUS_PLUS] =
+  {
+    unary,
+    unary,
+    PREC_NONE,
+  },
+  [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_EQUALITY},
+  [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
+  [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
+  [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
+  [TOKEN_STRING] = {string, NULL, PREC_NONE},
+  [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
+  [TOKEN_AND] = {NULL, and_, PREC_AND},
+  [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
+  [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
+  [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
+  [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
+  [TOKEN_IF] = {NULL, NULL, PREC_NONE},
+  [TOKEN_NIL] = {literal, NULL, PREC_NONE},
+  [TOKEN_OR] = {NULL, or_, PREC_OR},
+  [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
+  [TOKEN_USE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
+  [TOKEN_SUPER]  = {super_, NULL, PREC_NONE},
+  [TOKEN_THIS] = {this_, NULL, PREC_NONE},
+  [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
+  [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
+  [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
+  [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
 /* Stops expression() from consuming too much */
@@ -838,19 +871,45 @@ static void method() {
   emitBytes(OP_METHOD, constant);
 }
 
+/* Parse & Compile a class declaration */
 static void classDeclaration() {
+  /* We expect a class name */
   consume(TOKEN_IDENTIFIER, "Expect class name");
   Token className = parser.previous;
   uint8_t nameConstant = identifierConstant(&parser.previous);
+  /* We make a variable out of the class name */
   declareVariable();
 
+  /* Compile it as a class constant */
   emitBytes(OP_CLASS, nameConstant);
   defineVariable(nameConstant);
 
+  /* We use a struct to store state for a class */
   ClassCompiler classCompiler;
   classCompiler.name = parser.previous;
+  classCompiler.hasSuperClass = false;
   classCompiler.enclosing = currentClass;
   currentClass = &classCompiler;
+
+  /* Add the ability for a superclass */
+  if (match(TOKEN_LESS)) {
+    consume(TOKEN_IDENTIFIER, "Expect superclass name.");
+    /* The superclass is already a variable */
+    variable(false);
+
+    /* Preent a class from inheriting from itself */
+    if (identifiersEqual(&className, &parser.previous)) {
+      error("A class can't inherit from itself.");
+    }
+
+    beginScope();
+    addLocal(syntheticToken("super"));
+    defineVariable(0);
+
+    namedVariable(className, false);
+    emitByte(OP_INHERIT);
+    classCompiler.hasSuperClass = true;
+  }
 
   namedVariable(className, false);
 
@@ -861,6 +920,10 @@ static void classDeclaration() {
   }
   consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
   emitByte(OP_POP);
+
+  if (classCompiler.hasSuperClass) {
+    endScope();
+  }
 
   currentClass = currentClass->enclosing;
 }
@@ -1020,16 +1083,16 @@ static void synchronize() {
       return;
 
     switch (parser.current.type) {
-    case TOKEN_CLASS:
-    case TOKEN_FUN:
-    case TOKEN_VAR:
-    case TOKEN_FOR:
-    case TOKEN_IF:
-    case TOKEN_WHILE:
-    case TOKEN_PRINT:
-    case TOKEN_RETURN:
-      return;
-    default:
+      case TOKEN_CLASS:
+      case TOKEN_FUN:
+      case TOKEN_VAR:
+      case TOKEN_FOR:
+      case TOKEN_IF:
+      case TOKEN_WHILE:
+      case TOKEN_PRINT:
+      case TOKEN_RETURN:
+        return;
+      default:
         // do nothing
         ;
     }
