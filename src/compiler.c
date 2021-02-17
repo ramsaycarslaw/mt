@@ -5,6 +5,7 @@
 #include "../include/compiler.h"
 #include "../include/object.h"
 #include "../include/scanner.h"
+#include "../include/memory.h"
 
 #ifdef MT_DEBUG_PRINT_CODE
 #include "../include/debug.h"
@@ -33,6 +34,10 @@ typedef enum {
   PREC_SUBSCRIPT,  // [0]()
   PREC_PRIMARY
 } Precedence;
+
+/* Variables used for break and continue statements */
+int loopStart = -1;
+int loopDepth = 0;
 
 /* Template fuction for a parse rule */
 typedef void (*ParseFn)(bool canAssign);
@@ -82,6 +87,17 @@ typedef struct ClassCompiler {
   Token name;
   bool hasSuperClass;
 } ClassCompiler;
+
+/* Used for break/continue statements */
+typedef struct BreakJump 
+{
+	int scopeDepth;
+	int offset;
+	struct BreakJump* next;
+} BreakJump;
+
+/* Global representation of break state */
+BreakJump *breakJumps = NULL;
 
 /* Global parser struct */
 Parser parser;
@@ -296,6 +312,27 @@ static void endScope() {
   }
 }
 
+/* Patch a break statement */
+static void patchBreakJumps() 
+{
+	while (breakJumps != NULL) 
+	{	
+		if (breakJumps->scopeDepth >= loopDepth) 
+		{
+			patchJump(breakJumps->offset);
+
+			// free node in linked list
+			BreakJump* temp = breakJumps;
+			breakJumps = breakJumps->next;
+			FREE(BreakJump, temp);	
+		} 
+		else 
+		{
+			break;
+		}
+	}
+}
+
 /* Prototype functions */
 static uint8_t argumentList();
 static void expression();
@@ -433,7 +470,18 @@ static void string(bool canAssign) {
 /* Parse a list */
 static void list(bool canAssign) {
   int itemCount = 0;
+
+  // check for empty list
   if (!check(TOKEN_RIGHT_BRACKET)) {
+
+    if (match(TOKEN_DOT_DOT)) {
+      emitByte(OP_GENERATE_LIST);
+      advance();
+      number(canAssign);
+      consume(TOKEN_RIGHT_BRACKET, "Expected ']' after list.");
+      return;
+    }
+
     do {
       if (check(TOKEN_RIGHT_BRACKET)) {
         // Trailing comma case
@@ -610,6 +658,20 @@ static void this_(bool canAssign) {
   variable(false);
 }
 
+/* Used to increase the value of a variable by 1 */
+static void increment(bool canAssign)
+{
+  /* 
+   * We need to emit the bytes:
+   * OP_GET_GLOBAL
+   * OP_CONSTANT
+   * OP_ADD
+   * OP_SET_GLOBAL 
+   */
+
+  return;
+}
+
 /* Stores infomation on how to parse tokens */
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
@@ -631,7 +693,7 @@ ParseRule rules[] = {
   [TOKEN_PLUS_PLUS] =
   {
     unary,
-    unary,
+    increment,
     PREC_NONE,
   },
   [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_EQUALITY},
@@ -660,6 +722,7 @@ ParseRule rules[] = {
   [TOKEN_THIS] = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
   [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
+	[TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
   [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
   [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
   [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
@@ -945,9 +1008,39 @@ static void varDeclaration() {
   } else {
     emitByte(OP_NIL); /* variables are nil by default */
   }
-  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
+  consume(TOKEN_SEMICOLON, "xpected ';' after variable declaration.");
 
   defineVariable(global);
+}
+
+/* Compiles a break statement */
+static void breakStatement() 
+{
+  if (loopStart == -1) 
+  {
+    error("Unexpected 'break' outside of loop body");
+  }
+
+  // we expect a semicolon
+  consume(TOKEN_SEMICOLON, "Expected ';' after break statement");
+
+  // clear all local variables from memory
+  for (int i = current->localCount-1; 
+      i >= 0 && current->locals[i].depth > loopDepth; i--)
+  {
+    // probably a better way of doing this
+    emitByte(OP_POP);
+  }
+
+  // jump out of the loop
+  int jump = emitJump(OP_JUMP);
+
+	// Add breakJump to start of linked list
+	BreakJump* breakJump = ALLOCATE(BreakJump, 1);
+	breakJump->scopeDepth = loopDepth;
+	breakJump->offset = jump;
+	breakJump->next = breakJumps;
+	breakJumps = breakJump;
 }
 
 /* Compiles an expression statement */
@@ -971,7 +1064,11 @@ static void forStatement() {
     expressionStatement();
   }
 
-  int loopStart = currentChunk()->count;
+  // int loopStart = currentChunk()->count;
+	int surroundingStart = loopStart;
+	int surroundingDepth = loopDepth;
+	loopStart = currentChunk()->count;
+	loopDepth = current->scopeDepth;
 
   int exitJump = -1;
   if (!match(TOKEN_SEMICOLON)) {
@@ -1003,6 +1100,11 @@ static void forStatement() {
     patchJump(exitJump);
     emitByte(OP_POP);
   }
+
+	patchBreakJumps();
+
+	loopStart = surroundingStart;
+	loopDepth = surroundingDepth;
 
   endScope();
 }
@@ -1057,7 +1159,10 @@ static void returnStatement() {
 
 /* Compile a while statemnt */
 static void whileStatement() {
-  int loopStart = currentChunk()->count;
+	int surroundingStart = loopStart;
+	int surroundingDepth = loopDepth;
+	loopStart = currentChunk()->count;
+	loopDepth = current->scopeDepth;
 
   consume(TOKEN_LEFT_PAREN, "Expected '(' after 'while'.");
   expression();
@@ -1072,6 +1177,11 @@ static void whileStatement() {
 
   patchJump(exitJump);
   emitByte(OP_POP);
+
+	patchBreakJumps();
+
+	loopStart = surroundingStart;
+	loopDepth = surroundingDepth;
 }
 
 /* Basic error recovery */
@@ -1117,7 +1227,9 @@ static void declaration() {
 
 /* Parse a generic stateent */
 static void statement() {
-  if (match(TOKEN_PRINT)) {
+	if (match(TOKEN_BREAK)) {
+		breakStatement();
+	} else if (match(TOKEN_PRINT)) {
     printStatement();
   } else if (match(TOKEN_FOR)) {
     forStatement();

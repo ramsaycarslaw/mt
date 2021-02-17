@@ -24,6 +24,7 @@ typedef enum
     OP_GET_SUPER,
     OP_GET_PROPERTY,
     OP_BUILD_LIST, // []
+    OP_GENERATE_LIST,
     OP_INDEX_SUBSCR, // [n]
     OP_STORE_SUBSCR, // [n] = n
     OP_EQUAL,

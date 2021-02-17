@@ -625,6 +625,8 @@ static int run() {
     }
 
     case OP_USE: {
+      /* This has already been handlled by the preprocessor
+       * so there is no need to do anything here */
       break;
     }
 
@@ -709,6 +711,22 @@ static int run() {
       while (itemCount-- > 0) {
         pop();
       }
+
+      push(OBJ_VAL(list));
+      break;
+    }
+    
+    case OP_GENERATE_LIST: {
+      ObjList *list = newList();                       
+      uint8_t max = READ_BYTE();
+
+      push(OBJ_VAL(list));
+
+      for (int i = max-1; i >= 0; i--) {
+        appendToList(list, NUMBER_VAL(i));
+      }  
+      pop();
+      pop();
 
       push(OBJ_VAL(list));
       break;
