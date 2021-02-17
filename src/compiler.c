@@ -713,6 +713,9 @@ ParseRule rules[] = {
   [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
   [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
   [TOKEN_IF] = {NULL, NULL, PREC_NONE},
+  [TOKEN_SWITCH] = {NULL, NULL, PREC_NONE}, // handle switch statements
+  [TOKEN_CASE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_DEFAULT] = {NULL, NULL, PREC_NONE},
   [TOKEN_NIL] = {literal, NULL, PREC_NONE},
   [TOKEN_OR] = {NULL, or_, PREC_OR},
   [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
@@ -1148,6 +1151,70 @@ static void ifStatement() {
   patchJump(elseJump);
 }
 
+/* Compile a switch statement */
+static void switchStatement() {
+	consume(TOKEN_LEFT_PAREN, "Expect '(' after 'switch'");
+	expression();
+	consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression");
+	consume(TOKEN_LEFT_BRACE, "Expect '{' before switch cases.");
+
+	int state = 0;
+	int cases[500];
+	int case_count = 0;
+	int case_ = -1;
+
+	while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+		if (match(TOKEN_CASE) || match(TOKEN_DEFAULT)) {
+			TokenType caseType = parser.previous.type;
+
+			if (state == 2) {
+				error("Can't have another case or default after the default case.");
+			}
+
+			if (state == 1) {
+				cases[case_count++] = emitJump(OP_JUMP);
+				patchJump(case_);
+				emitByte(OP_POP);
+			}
+
+			if (caseType == TOKEN_CASE) {
+				state = 1;
+
+				emitByte(OP_COPY);
+				expression();
+
+				consume(TOKEN_COLON, "Expected ':' after case value.");
+				beginScope();
+
+				emitByte(OP_EQUAL);
+				case_ = emitJump(OP_JUMP_IF_FALSE);
+				emitByte(OP_POP);
+				endScope();
+			} else {
+				state = 2;
+				consume(TOKEN_COLON, "Expected ':' after 'default'.");
+				case_ = -1;
+			}
+		} else {
+			if (state == 0) {
+				error("Can't have statements before any case.");
+			}
+			statement();
+		}
+	}
+
+  if (state == 1) 
+  {
+    patchJump(case_);
+    emitByte(OP_POP);
+  }
+
+  for (int i = 0; i < case_count; i++)
+    patchJump(cases[i]);
+
+  emitByte(OP_POP);
+}
+
 /* Compiles a print statement */
 static void printStatement() {
   expression();
@@ -1256,6 +1323,8 @@ static void statement() {
     forStatement();
   } else if (match(TOKEN_IF)) {
     ifStatement();
+  } else if (match(TOKEN_SWITCH)) {
+    switchStatement();
   } else if (match(TOKEN_RETURN)) {
     returnStatement();
   } else if (match(TOKEN_WHILE)) {

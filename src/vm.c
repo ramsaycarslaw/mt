@@ -839,6 +839,10 @@ static int run() {
       break;
     }
 
+    case OP_COPY:
+      push(peek(0));
+      break;
+
     case OP_METHOD:
       defineMethod(READ_STRING());
       break;
