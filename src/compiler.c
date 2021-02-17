@@ -723,6 +723,7 @@ ParseRule rules[] = {
   [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
   [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
 	[TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
+	[TOKEN_CONTINUE] = {NULL, NULL, PREC_NONE},
   [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
   [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
   [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
@@ -1043,6 +1044,24 @@ static void breakStatement()
 	breakJumps = breakJump;
 }
 
+/* Compiles a continue statement */
+static void continueStatement() 
+{
+	if (loopStart == -1) 
+	{
+		error("Unexpected 'comntinue' outisde of loop body");
+	}	
+
+	consume(TOKEN_SEMICOLON, "Expected ';' after 'continue'");
+
+	for (int i = current->localCount - 1;
+  	i >= 0 && current->locals[i].depth > loopDepth; i--)
+	{
+		emitByte(OP_POP);		
+	}
+	emitJump(loopStart);
+}
+
 /* Compiles an expression statement */
 static void expressionStatement() {
   expression();
@@ -1229,6 +1248,8 @@ static void declaration() {
 static void statement() {
 	if (match(TOKEN_BREAK)) {
 		breakStatement();
+	} else if (match(TOKEN_CONTINUE)) {
+		continueStatement();
 	} else if (match(TOKEN_PRINT)) {
     printStatement();
   } else if (match(TOKEN_FOR)) {

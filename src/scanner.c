@@ -150,7 +150,16 @@ static TokenType identifierType()
   switch (scanner.start[0])
   {
     case '&': return checkKeyword(1, 1, "&", TOKEN_AND); // and
-    case 'c': return checkKeyword(1, 4, "lass", TOKEN_CLASS);
+    case 'c': 
+    {
+      if (scanner.current - scanner.start > 1) {
+        switch (scanner.start[1]) 
+        {
+          case 'o': return checkKeyword(2, 6, "ntinue", TOKEN_CONTINUE);
+          case 'l': return checkKeyword(2, 3, "ass", TOKEN_CLASS);
+        }
+      }           
+    } 
     case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
     case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
     case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
