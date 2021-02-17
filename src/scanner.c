@@ -270,6 +270,7 @@ Token scanToken()
     case ';': return makeToken(TOKEN_SEMICOLON);
     case ',': return makeToken(TOKEN_COMMA);
     case ':': return makeToken(TOKEN_COLON);
+    case '?': return makeToken(TOKEN_QUESTION);
     case '.': {
       if (match('.')) {
         // used in list comprehensions

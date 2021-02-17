@@ -341,6 +341,30 @@ static void declaration();
 static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
+/* Parse a ternary expression */
+static void ternary(bool canAssign) 
+{
+  /* 
+   
+   expression ? statement : statement;
+
+   */ 
+
+  int jump = emitJump(OP_JUMP_IF_FALSE);
+  emitByte(OP_POP);
+  expression();
+
+  consume(TOKEN_COLON, "Expected ':' in ternary expression.");
+
+  int elseJump = emitJump(OP_JUMP);
+
+  patchJump(jump);
+  emitByte(OP_POP);
+
+  expression();
+  patchJump(elseJump);
+}
+
 /* Parser a binary expression */
 static void binary(bool canAssign) {
   /*
@@ -682,6 +706,7 @@ ParseRule rules[] = {
   [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
   [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
   [TOKEN_DOT] = {NULL, dot, PREC_CALL},
+  [TOKEN_QUESTION] = {NULL, ternary, PREC_OR},
   [TOKEN_MINUS] = {unary, binary, PREC_TERM},
   [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
   [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
