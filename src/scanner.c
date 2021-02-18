@@ -123,6 +123,12 @@ static void skipWhitespace()
           // A comment goes until the end of the line.
           while (peek() != '\n' && !isAtEnd()) advance();
         }
+        else if (peekNext() == '*') 
+        {
+          // C - style comments
+          while (peek() != '*' && peekNext() != '/' && !isAtEnd()) advance();
+          advance();
+        }
         else
         {
           return;

@@ -74,6 +74,14 @@ static void freeObject(Obj* object)
         break;
     }
 
+    case OBJ_NATIVE_CLASS: 
+    {
+      ObjNativeClass* klass = (ObjNativeClass*)object;
+      freeTable(&klass->methods);
+      FREE(ObjNativeClass, object);
+      break;
+    }
+
     case OBJ_CLOSURE:
     {
     ObjClosure* closure = (ObjClosure*)object;

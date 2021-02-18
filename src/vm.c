@@ -12,6 +12,7 @@
 #include "../include/object.h"
 #include "../include/vm.h"
 
+
 /* Maybe take a pointer later to remove the global variable */
 VM vm;
 
@@ -29,7 +30,7 @@ static void resetStack() {
   vm.openUpvalues = NULL;
 }
 
-static void runtimeError(const char *format, ...) {
+void runtimeError(const char *format, ...) {
   va_list args;
   va_start(args, format);
   vfprintf(stderr, format, args);
@@ -70,6 +71,10 @@ void initVM() {
 
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
+
+  /* Modules */
+  createAssertModule();
+  createLogModule();
 
   /* System */
   defineNative("clock", clockNative);
@@ -186,20 +191,50 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name, int argCount) {
 static bool invoke(ObjString *name, int argCount) {
   Value receiver = peek(argCount);
 
-  if (!IS_INSTANCE(receiver)) {
-    runtimeError("Only instances have methods");
+  if (!IS_OBJ(receiver)) {
+    runtimeError("Can only invoke on objects");
     return false;
   }
 
-  ObjInstance *instance = AS_INSTANCE(receiver);
+  switch (getObjType(receiver)) {
+    /* Natice modules*/
+    case OBJ_NATIVE_CLASS: 
+    {
+      ObjNativeClass* instance = AS_NATIVE_CLASS(receiver); 
 
-  Value value;
-  if (tableGet(&instance->fields, name, &value)) {
-    vm.stackTop[-argCount - 1] = value;
-    return callValue(value, argCount);
+      Value function;
+
+      /* Avoid treating native objects like normal objects */
+      if (!tableGet(&instance->methods, name, &function))
+      {
+        runtimeError("Undefined property '%s'.", name->chars);
+        return false;
+      }
+
+      return callValue(function, argCount);
+    }
+    /* Instances */
+    case OBJ_INSTANCE: 
+    {
+      ObjInstance* instance = AS_INSTANCE(receiver);
+
+      Value value;
+
+      if (tableGet(&instance->fields, name, &value)) {
+        vm.stackTop[-argCount - 1] = value;
+
+        return callValue(value, argCount);
+      }
+
+      return invokeFromClass(instance->klass, name, argCount);
+    }
+
+    default: 
+    {
+      runtimeError("Only instances have methods.");
+      return false;
+    }
   }
-
-  return invokeFromClass(instance->klass, name, argCount);
 }
 
 /* Runtime code for bound methods of classes */
@@ -258,7 +293,7 @@ static void defineMethod(ObjString *name) {
   pop();
 }
 
-static bool isFalsey(Value value) {
+bool isFalsey(Value value) {
   return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 

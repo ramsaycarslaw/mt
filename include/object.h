@@ -10,6 +10,7 @@
 
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value)    isObjType(value, OBJ_CLASS)
+#define IS_NATIVE_CLASS(value) isObjType(value, OBJ_NATIVE_CLASS)
 #define IS_CLOSURE(value)  isObjType(value, OBJ_CLOSURE)
 #define IS_STRING(value)   isObjType(value, OBJ_STRING)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
@@ -19,6 +20,7 @@
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
+#define AS_NATIVE_CLASS(value) ((ObjNativeClass*)AS_OBJ(value))
 #define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
@@ -31,6 +33,7 @@ typedef enum
 {
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
+    OBJ_NATIVE_CLASS,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
@@ -55,14 +58,24 @@ typedef struct
     ObjString* name;
 } ObjFunction;
 
+/* Shorthand */
 typedef Value (*NativeFn)(int argCount, Value* args);
 
+/*Native objects */
 typedef struct 
 {
     Obj obj;
     NativeFn function;
 } ObjNative;
 
+/* Create a native class for the module system */
+typedef struct sObjNativeClass {
+  Obj obj;
+  ObjString* name;
+  Table methods;
+} ObjNativeClass;
+
+/* Create strings that are fast */
 struct sObjString
 {
 	Obj obj;
@@ -133,6 +146,7 @@ bool isValidStringIndex(ObjString* string, int index);
 Value indexFromString(ObjString* string, int index);
 ObjBoundMethod* newBoundMethod(Value reciever, ObjClosure* method);
 ObjClass* newClass(ObjString* name);
+ObjNativeClass *newNativeClass(ObjString *name);
 ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction();
 ObjInstance* newInstance(ObjClass* klass);
@@ -145,6 +159,11 @@ void printObject(Value value);
 static inline bool isObjType(Value value, ObjType type)
 {
 	return IS_OBJ(value) && AS_OBJ(value)->type == type;
+}
+
+/* Used for modules */
+static inline ObjType getObjType(Value value) {
+      return AS_OBJ(value)->type;
 }
 
 #endif

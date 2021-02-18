@@ -6,6 +6,9 @@
 #include "table.h"
 #include "value.h"
 
+#include "../module/assert.h"
+#include "../module/log.h"
+
 #define FRAMES_MAX 1024
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
@@ -41,6 +44,8 @@ typedef enum {
 } InterpretResult;
 
 extern VM vm;
+void runtimeError(const char *format, ...);
+bool isFalsey(Value value);
 void initVM();
 void freeVM();
 InterpretResult interpret(const char *src);

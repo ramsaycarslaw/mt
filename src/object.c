@@ -44,6 +44,14 @@ ObjClass* newClass(ObjString* name)
     return klass;
 }
 
+/* Create a new native class that is memory safe */
+ObjNativeClass* newNativeClass(ObjString *name) {
+    ObjNativeClass* klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
+    klass->name = name;
+    initTable(&klass->methods);
+    return klass;
+}
+
 /* Initialise a new list object */
 ObjList* newList()
 {
@@ -255,6 +263,10 @@ void printObject(Value value)
     {
     case OBJ_CLASS:
         printf("%s", AS_CLASS(value)->name->chars);
+        break;
+    case OBJ_NATIVE_CLASS:
+        // TODO fix this
+        printf("Internal class");
         break;
     case OBJ_CLOSURE:
 	    printFunction(AS_CLOSURE(value)->function);

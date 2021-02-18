@@ -7,6 +7,8 @@
 #include "object.h"
 #include "value.h"
 #include "vm.h"
+#include "common.h"
+
 
 Value clockNative(int argCount, Value *args);
 Value sleepNative(int argCount, Value *args);
