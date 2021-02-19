@@ -62,6 +62,38 @@ static Value assertIsFalse(int argCount, Value *args)
   return NIL_VAL;
 }
 
+/* Check that two values are equal */
+static Value assertEqualNative(int argCount, Value *args) 
+{
+  /* Check we have at least one value */
+  if (argCount < 2) 
+  {
+    runtimeError("Expected at least 2 arguments to 'assert.Equals' %d given.", argCount);
+    return NIL_VAL;
+  }
+
+  /* True until proven fasle */
+  bool result = true;
+
+  /* iterate over all the results */
+  for (int i = 1; i < argCount; i++) 
+  {
+    Value a = args[i-1];
+    Value b = args[i];
+
+    result = result && valuesEqual(a, b);
+  }
+
+  if (!result) 
+  {
+    runtimeError("Could not assert all values to be equal.");
+    exit(70);
+  }
+
+  return NIL_VAL;
+}
+
+
 /* Finally we create the module */
 void createAssertModule() 
 {
@@ -75,6 +107,7 @@ void createAssertModule()
 
   defineModuleMethod(klass, "True", assertIsTrue);
   defineModuleMethod(klass, "False", assertIsFalse);
+  defineModuleMethod(klass, "Equals", assertEqualNative);
 
 
   tableSet(&vm.globals, name, OBJ_VAL(klass));

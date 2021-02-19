@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
 
 #include "modules.h"
 

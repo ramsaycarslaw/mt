@@ -1,56 +1,47 @@
 #include "../include/preproc.h"
 #include "../include/vm.h"
 
-static char* readFile(const char* path)
-{
-	FILE* file;
-  file = fopen(path, "rb");
-	if (file == NULL)
-	{
-    char * mt_path = "$HOME/.mtlib/stdlib/";
-    char * final_path = malloc(sizeof(char)*(strlen(mt_path)+strlen(path)));
-    
-    strcat(final_path, mt_path);
-    strcat(final_path, path);
+/* Read a file frim the given path */
+char* readFile(const char* path) {
+  FILE* file = fopen(path, "rb");
 
-    file = fopen(final_path, "rb");
+  if (file == NULL) {
+    printf("Could not open file, file doesn't exist.\n");
+    exit(74);
+  }
 
-    if (file == NULL) 
-    {
-      printf("Your mt library path is not configured correctly, to fix this run:\n");
-      printf("> mkdir -p ~/.mtlib/stdlib/\n");
-		  fprintf(stderr, "Could not open file \"%s\".\n", final_path);
-		  exit(74);
-    }
-	}
-	
-	fseek(file, 0L, SEEK_END);
-	size_t fileSize = ftell(file);
-	rewind(file);
-	
-	char* buffer = (char*)malloc(fileSize + 1);
-	if (buffer == NULL)
-	{
-		fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
-		exit(74);
-	}
-	size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
-	if (bytesRead < fileSize)
-	{
-		fprintf(stderr, "Could not read file \"%s\".\n", path);
-		exit(74);
-	}
-	buffer[bytesRead] = '\0';
+  // Find out how big the file is
+  fseek(file, 0L, SEEK_END);
+  size_t fileSize = ftell(file);
+  rewind(file);
 
-	
-	
-	fclose(file);
-	return buffer;
+  // Allocate a buffer for it
+  char* buffer = (char*)malloc(fileSize + 1);
+
+  if (buffer == NULL) {
+    printf("Insufficient memory to read file.\n");
+    exit(74);
+  }
+
+  // Read the entire file
+  size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+
+  if (bytesRead < fileSize) {
+    printf("Could not read file\n");
+    exit(74);
+  }
+
+  buffer[bytesRead] = '\0';
+
+  fclose(file);
+
+  return buffer;
 }
 
 /* Get all the imports from the file which should alloq us to run them */
 int getImports(char *src) 
 {
+
   int count = 0;
   /* Duplicate src so it is safe to use strtok */
   char * copy = malloc(sizeof(char)*strlen(src)+1);
@@ -65,7 +56,7 @@ int getImports(char *src)
     if (imp) 
     {
       count++;
-			interpret(readFile(word));
+      interpret(readFile(word));
       imp = 0;
     }
 

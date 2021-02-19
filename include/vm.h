@@ -7,6 +7,7 @@
 #include "value.h"
 
 #include "../module/assert.h"
+#include "../module/http.h"
 #include "../module/log.h"
 
 #define FRAMES_MAX 1024
@@ -14,7 +15,7 @@
 
 /* Manages call frames/stack for the VM */
 typedef struct {
-    ObjClosure* closure;
+  ObjClosure* closure;
   uint8_t *ip;
   Value *slots;
 } CallFrame;
@@ -25,6 +26,9 @@ typedef struct {
 typedef struct {
   CallFrame frames[FRAMES_MAX];
   int frameCount;
+
+  const char* scriptName;
+  const char* currentScriptName;
 
   Value stack[STACK_MAX];
   Value *stackTop;

@@ -6,6 +6,8 @@
 #include <string.h>
 #include <assert.h>
 
+
+char *readFile(const char* path);
 int getImports(char *src);
 
 #endif

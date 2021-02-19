@@ -288,6 +288,8 @@ Token scanToken()
     case '+':  {
                  if (match('+')) {
                    return makeToken(TOKEN_PLUS_PLUS);
+                 } else if (match('=')) {
+                  return makeToken(TOKEN_PLUS_EQUALS);
                  }
                  return makeToken(TOKEN_PLUS);
                }

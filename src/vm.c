@@ -11,6 +11,7 @@
 #include "../include/native.h"
 #include "../include/object.h"
 #include "../include/vm.h"
+#include "../include/preproc.h"
 
 
 /* Maybe take a pointer later to remove the global variable */
@@ -63,17 +64,23 @@ static void defineNative(const char *name, NativeFn function) {
   pop();
 }
 
-void initVM() {
+void initVM(const char* scriptName) {
   resetStack();
   vm.objects = NULL;
+
+  vm.scriptName = scriptName;
+  vm.currentScriptName = scriptName;
+
   initTable(&vm.strings);
   initTable(&vm.globals);
 
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
 
+
   /* Modules */
   createAssertModule();
+  createHttpModule();
   createLogModule();
 
   /* System */
@@ -659,10 +666,26 @@ static int run() {
       break;
     }
 
-    case OP_USE: {
-      /* This has already been handlled by the preprocessor
-       * so there is no need to do anything here */
-      break;
+    case OP_USE: 
+    {
+      /*
+      ObjString* fileName = AS_STRING(pop());
+      char* s = readFile(fileName->chars);
+      vm.currentScriptName = fileName->chars;
+
+      ObjFunction* function = compile(s);
+      if (function == NULL)
+        return INTERPRET_COMPILE_ERROR;
+      push(OBJ_VAL(function));
+      ObjClosure* closure = newClosure(function);
+      pop();
+
+      call(closure, 0);
+      frame = &vm.frames[vm.frameCount - 1];
+
+      free(s);
+      */
+      break;      
     }
 
     case OP_JUMP: {
@@ -890,10 +913,12 @@ static int run() {
 #undef BINARY_OP
 }
 
-InterpretResult interpret(const char *source) {
+InterpretResult interpret(const char *source) 
+{  
   ObjFunction *function = compile(source);
   if (function == NULL)
     return INTERPRET_COMPILE_ERROR;
+
 
   push(OBJ_VAL(function));
 
@@ -911,6 +936,7 @@ void push(Value value) {
 }
 
 Value pop() {
+  
   vm.stackTop--;
   return *vm.stackTop;
 }

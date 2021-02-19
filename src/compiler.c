@@ -590,6 +590,15 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
 
 /* Get the named variable from the compiler */
 static void namedVariable(Token name, bool canAssign) {
+  
+  #define SHORT_HAND(op) \
+  do { \
+    emitBytes(getOp, (uint8_t)arg); \
+    expression(); \
+    emitByte(op); \
+    emitBytes(setOp, (uint8_t)arg); \
+  } while (false)
+
   uint8_t getOp, setOp;
   int arg = resolveLocal(current, &name);
 
@@ -608,6 +617,9 @@ static void namedVariable(Token name, bool canAssign) {
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();
     emitBytes(setOp, (uint8_t)arg);
+  } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
+    // we use the above macro
+    SHORT_HAND(OP_ADD);
   } else {
     emitBytes(getOp, (uint8_t)arg);
   }
@@ -685,14 +697,6 @@ static void this_(bool canAssign) {
 /* Used to increase the value of a variable by 1 */
 static void increment(bool canAssign)
 {
-  /* 
-   * We need to emit the bytes:
-   * OP_GET_GLOBAL
-   * OP_CONSTANT
-   * OP_ADD
-   * OP_SET_GLOBAL 
-   */
-
   return;
 }
 
@@ -715,6 +719,7 @@ ParseRule rules[] = {
   [TOKEN_PERCENT] = {NULL, binary, PREC_FACTOR},
   [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
   [TOKEN_BANG] = {unary, NULL, PREC_NONE},
+  [TOKEN_PLUS_EQUALS] = {NULL, binary, PREC_NONE},
   [TOKEN_PLUS_PLUS] =
   {
     unary,
@@ -1156,6 +1161,19 @@ static void forStatement() {
   endScope();
 }
 
+/* Compile an import statement */
+static void useStatement()
+{
+  consume(TOKEN_STRING, "Expected string following 'use' statement"); 
+  // emit the filename as a string
+  emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+  consume(TOKEN_SEMICOLON, "Expected ';' after 'use'");
+
+  emitByte(OP_USE);
+
+  emitByte(OP_USE);
+}
+
 /* Compiles an if statement */
 static void ifStatement() {
   consume(TOKEN_LEFT_PAREN, "Expected '(' after if statement.");
@@ -1247,8 +1265,6 @@ static void printStatement() {
   emitByte(OP_PRINT);
 }
 
-static void useStatement() { emitByte(OP_USE); }
-
 /* Compile a function return statement */
 static void returnStatement() {
   /* cannot return from main */
@@ -1309,6 +1325,7 @@ static void synchronize() {
       case TOKEN_VAR:
       case TOKEN_FOR:
       case TOKEN_IF:
+      case TOKEN_USE:
       case TOKEN_WHILE:
       case TOKEN_PRINT:
       case TOKEN_RETURN:
