@@ -620,6 +620,16 @@ static void namedVariable(Token name, bool canAssign) {
   } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
     // we use the above macro
     SHORT_HAND(OP_ADD);
+  } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
+    SHORT_HAND(OP_SUBTRACT);
+  }  else if (canAssign && match(TOKEN_STAR_EQUALS)) {
+    SHORT_HAND(OP_MULTIPLY);
+  }  else if (canAssign && match(TOKEN_SLASH_EQUALS)) {
+    SHORT_HAND(OP_DIVIDE);
+  }  else if (canAssign && match(TOKEN_CARAT_EQUALS)) {
+    SHORT_HAND(OP_POW);
+  }  else if (canAssign && match(TOKEN_PERCENT_EQUALS)) {
+    SHORT_HAND(OP_MOD);
   } else {
     emitBytes(getOp, (uint8_t)arg);
   }
