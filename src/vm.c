@@ -346,31 +346,31 @@ static ObjectModule* createModule(ObjString* relativePath)
 static bool importModule(const char* path) 
 {  
   const char *src = readFile(path);
-  if (interpretModule(src) == INTERPRET_RUNTIME_ERROR) {
+  /*if (interpretModule(src) == INTERPRET_RUNTIME_ERROR) {
+    return false;
+  }*/
+
+  ObjFunction* function = compile(src);
+
+  if (function == NULL) 
+  {
+    runtimeError("Could not compile '%s'", path);    
     return false;
   }
 
-//  ObjFunction* function = compile(src);
-//
-//  if (function == NULL) 
-//  {
-//    runtimeError("Could not compile '%s'", path);    
-//    return false;
-//  }
-//
-//  // TODO 
-//  // 1. Make a Table called modules
-//  // 2. if exists in modules, dont import
-//  // 3. if doent set key
-//
-//  push(OBJ_VAL(function));
-//  //printValue(OBJ_VAL(function));
-//
-//  ObjClosure *closure = newClosure(function);
-//  pop();
-//  push(OBJ_VAL(closure));
-//  callValue(OBJ_VAL(closure), 0);
-//
+  // TODO 
+  // 1. Make a Table called modules
+  // 2. if exists in modules, dont import
+  // 3. if doent set key
+
+  push(OBJ_VAL(function));
+  //printValue(OBJ_VAL(function));
+
+  ObjClosure *closure = newClosure(function);
+  pop();
+  push(OBJ_VAL(closure));
+  callValue(OBJ_VAL(closure), 0);
+
   return true;  
 }
 
@@ -736,6 +736,8 @@ static int run() {
       if (!success) {
         return INTERPRET_COMPILE_ERROR;
       }
+      frame = &vm.frames[vm.frameCount - 1];
+
       break;      
     }
 
