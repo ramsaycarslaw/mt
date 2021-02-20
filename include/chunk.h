@@ -34,6 +34,7 @@ typedef enum
     OP_INCR,     // ++
     OP_PRINT,
     OP_USE,
+    OP_USE_ALL,
     OP_JUMP,
     OP_JUMP_IF_FALSE,
     OP_LOOP,

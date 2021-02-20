@@ -114,6 +114,10 @@ static void freeObject(Obj* object)
   case OBJ_UPVALUE:
     FREE(ObjUpvalue, object);
     break;
+
+    case OBJ_MODULE:
+        FREE(ObjectModule, object);
+        break;
 	}
 }
 

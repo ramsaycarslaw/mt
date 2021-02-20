@@ -65,64 +65,6 @@ static Value logFatalNative(int argCount, Value *args)
 #endif
 }
 
-/* Print a progress bar to the screen takes a variable and a maximum value */
-static Value logProgressNative(int argCount, Value *args) 
-{
-  // check arguments
-  if (argCount < 2) 
-  {
-    runtimeError("Expected at least 2 arguments to 'log.Progress' got %d", argCount);
-    exit(74);
-  }
-
-  // type errors
-  if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) 
-  {
-    runtimeError("Expected values of type 'number' to 'log.Progress'.");
-    exit(74);
-  }
-
-  long int length;
-
-  // we have a length
-  if (argCount == 3) 
-  {
-    length = (long int) AS_NUMBER(args[2]);
-  } else {
-    length = 20;
-  }
-
-
-  printf("\x1b[2K");
-
-  int current = AS_NUMBER(args[0]);
-  int max = AS_NUMBER(args[1]);
-
-  if (current == max) {
-    printf("\n");
-    return NUMBER_VAL(0);
-  }
-
-  long double percent = (current / max) * 100;
-
-  // print current percentage
-  printf("%Lf%%", percent);
-
-  // print start of prog bar
-  printf(" [");
-
-  long double step = length / max;
-  for (int i = 0; i < round(step*current); i++)
-    printf("#"); // █
-
-  for (int i = round(current); i < round(max); i++) 
-    printf(" ");
-
-  printf("]");
-  return NUMBER_VAL(0);
-
-}
-
 /* Create a fake class for the log library  */
 void createLogModule() 
 {

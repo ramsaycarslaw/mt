@@ -61,7 +61,7 @@ static void runFile(const char* path)
     source = readLiterate(source);
   }
 
-  getImports(source);
+  // getImports(source);
 
   InterpretResult result = interpret(source);
   free(source); 

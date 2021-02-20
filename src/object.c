@@ -230,6 +230,53 @@ ObjUpvalue* newUpvalue(Value* slot)
   return upvalue;
 }
 
+
+/* Create a new struct of type Module */
+ObjectModule* newModule(ObjString* path, ObjString* name) {
+  ObjectModule* mod = ALLOCATE_OBJ(ObjectModule, OBJ_MODULE);
+  mod->path = path;
+  mod->name = name;
+  mod->imported = true;
+  return mod;
+}
+
+ObjString* fromCString(const char * chars) 
+{
+  return copyString(chars, strlen(chars));
+}
+
+/* Make an empty string */
+static ObjString* makeEmpty() 
+{
+  return fromCString("");
+}
+
+/* Actually sort out paths */
+ObjectModule* fromFullPath(const char *fullPath) {
+  ObjString* path = NULL;
+  ObjString* name = NULL;
+
+  char* dest = strchr(fullPath, '/');
+  if (!dest) 
+  {
+    path = makeEmpty();
+    push(OBJ_VAL(path));
+    name = copyString(fullPath, strlen(fullPath));
+    push(OBJ_VAL(name));
+  } else {
+    path = copyString(fullPath, strlen(fullPath) - strlen(dest) + 1);
+    push(OBJ_VAL(path));
+    name = copyString(dest+1, strlen(dest+1));
+    push(OBJ_VAL(name));
+  }
+
+  ObjectModule* mod = newModule(path, name);
+  pop();
+  pop();
+  return mod;
+}
+
+
 /* Print a function as a first class object */
 static void printFunction(ObjFunction* function) 
 {
@@ -287,6 +334,9 @@ void printObject(Value value)
 	    break;
     case OBJ_UPVALUE:
       printf("upvalue");
+      break;
+    case OBJ_MODULE:
+      printf("module");
       break;
     case OBJ_LIST:
         printList(AS_LIST(value));

@@ -1057,6 +1057,15 @@ static void varDeclaration() {
   defineVariable(global);
 }
 
+/* Compile a use statement */
+static void useDeclaration() 
+{
+  // TODO add as 
+  expression();
+  emitByte(OP_USE);
+  consume(TOKEN_SEMICOLON, "Expected ';' after 'use' path");
+}
+
 /* Compiles a break statement */
 static void breakStatement() 
 {
@@ -1169,19 +1178,6 @@ static void forStatement() {
 	loopDepth = surroundingDepth;
 
   endScope();
-}
-
-/* Compile an import statement */
-static void useStatement()
-{
-  consume(TOKEN_STRING, "Expected string following 'use' statement"); 
-  // emit the filename as a string
-  emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
-  consume(TOKEN_SEMICOLON, "Expected ';' after 'use'");
-
-  emitByte(OP_USE);
-
-  emitByte(OP_USE);
 }
 
 /* Compiles an if statement */
@@ -1349,7 +1345,9 @@ static void synchronize() {
 }
 
 static void declaration() {
-  if (match(TOKEN_CLASS)) {
+  if (match(TOKEN_USE)) {
+    useDeclaration();
+  } else if (match(TOKEN_CLASS)) {
     classDeclaration();
   } else if (match(TOKEN_FUN)) {
     funDeclaration();
@@ -1385,8 +1383,6 @@ static void statement() {
     beginScope();
     block();
     endScope();
-  } else if (match(TOKEN_USE)) {
-    useStatement();
   } else {
     expressionStatement();
   }

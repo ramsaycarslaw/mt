@@ -52,6 +52,7 @@ void runtimeError(const char *format, ...);
 bool isFalsey(Value value);
 void initVM();
 void freeVM();
+InterpretResult interpretModule(const char *source) ;
 InterpretResult interpret(const char *src);
 void push(Value value);
 Value pop();

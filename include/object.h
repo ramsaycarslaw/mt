@@ -17,6 +17,7 @@
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE(value)   isObjType(value, OBJ_NATIVE)
 #define IS_LIST(value)     isObjType(value, OBJ_LIST)
+#define IS_MODULE(value)   isObjType(value, OBJ_VALUE)
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
@@ -28,6 +29,7 @@
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
+#define AS_MODULE(value)        ((ObjectModule*)AS_OBJ(value))
 
 typedef enum
 {
@@ -41,6 +43,7 @@ typedef enum
     OBJ_STRING,
     OBJ_LIST,
     OBJ_UPVALUE,
+    OBJ_MODULE,
 } ObjType;
 
 struct sObj
@@ -136,6 +139,15 @@ typedef struct
     Value* items;
 } ObjList;
 
+/* Used for importing code */
+typedef struct 
+{
+  Obj base;
+  ObjString* path;
+  ObjString* name;
+  bool imported;
+} ObjectModule;
+
 ObjList* newList();
 void appendToList(ObjList* list, Value value);
 void storeToList(ObjList* list, int index, Value value);
@@ -154,6 +166,12 @@ ObjNative* newNative(NativeFn functiom);
 ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
 ObjUpvalue* newUpvalue(Value* slot);
+
+ObjString* fromCString(const char * chars);
+
+ObjectModule* newModule(ObjString* path, ObjString* name);
+ObjectModule* fromFullPath(const char *fullpath);
+
 void printObject(Value value);
 
 static inline bool isObjType(Value value, ObjType type)

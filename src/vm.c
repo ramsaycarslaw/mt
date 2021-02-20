@@ -318,6 +318,62 @@ static void concatenate() {
   push(OBJ_VAL(result));
 }
 
+/*
+static ObjectModule* createModule(ObjString* relativePath) 
+{
+  char buffer[4000];
+  char *buf = getcwd(NULL, 0);
+
+  if (!buf) 
+  {
+    runtimeError("Could not detect working directory.");
+    exit(74);
+  }
+
+  strcat(buffer, buf);
+  strcat(buffer, relativePath->chars);
+  ObjString* fullPath = fromCString(buffer);
+
+  ObjectModule* mod = fromFullPath(fullPath);
+  pop();
+  push(OBJ_VAL(mod));
+
+  free(buf);
+} 
+*/
+
+/* Update an object module to actuallu import something */
+static bool importModule(const char* path) 
+{  
+  const char *src = readFile(path);
+  if (interpretModule(src) == INTERPRET_RUNTIME_ERROR) {
+    return false;
+  }
+
+//  ObjFunction* function = compile(src);
+//
+//  if (function == NULL) 
+//  {
+//    runtimeError("Could not compile '%s'", path);    
+//    return false;
+//  }
+//
+//  // TODO 
+//  // 1. Make a Table called modules
+//  // 2. if exists in modules, dont import
+//  // 3. if doent set key
+//
+//  push(OBJ_VAL(function));
+//  //printValue(OBJ_VAL(function));
+//
+//  ObjClosure *closure = newClosure(function);
+//  pop();
+//  push(OBJ_VAL(closure));
+//  callValue(OBJ_VAL(closure), 0);
+//
+  return true;  
+}
+
 static int run() {
   CallFrame *frame = &vm.frames[vm.frameCount - 1];
 #define READ_BYTE() (*frame->ip++) // method to get the next byte
@@ -326,6 +382,7 @@ static int run() {
 #define READ_SHORT()                                                           \
   (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_STRING() AS_STRING(READ_CONSTANT())
+
 #define BINARY_OP(valueType, op)                                               \
   do {                                                                         \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {                          \
@@ -668,25 +725,22 @@ static int run() {
 
     case OP_USE: 
     {
-      /*
-      ObjString* fileName = AS_STRING(pop());
-      char* s = readFile(fileName->chars);
-      vm.currentScriptName = fileName->chars;
+      if (!IS_STRING(peek(0))) {
+        runtimeError("Module name must be a string");
+        return INTERPRET_RUNTIME_ERROR;
+      }
 
-      ObjFunction* function = compile(s);
-      if (function == NULL)
-        return INTERPRET_COMPILE_ERROR;
-      push(OBJ_VAL(function));
-      ObjClosure* closure = newClosure(function);
+      bool success = importModule(AS_CSTRING(pop()));
       pop();
 
-      call(closure, 0);
-      frame = &vm.frames[vm.frameCount - 1];
-
-      free(s);
-      */
+      if (!success) {
+        return INTERPRET_COMPILE_ERROR;
+      }
       break;      
     }
+
+    case OP_USE_ALL:
+      break;
 
     case OP_JUMP: {
       uint16_t offset = READ_SHORT();
@@ -904,6 +958,9 @@ static int run() {
     case OP_METHOD:
       defineMethod(READ_STRING());
       break;
+
+    default:
+      break;
     }
   }
 #undef READ_BYTE
@@ -912,6 +969,23 @@ static int run() {
 #undef READ_STRING
 #undef BINARY_OP
 }
+
+InterpretResult interpretModule(const char *source) 
+{  
+  ObjFunction *function = compile(source);
+  if (function == NULL)
+    return INTERPRET_COMPILE_ERROR;
+
+
+  push(OBJ_VAL(function));
+
+  ObjClosure *closure = newClosure(function);
+  pop();
+  push(OBJ_VAL(closure));
+
+  return run();
+}
+
 
 InterpretResult interpret(const char *source) 
 {  
