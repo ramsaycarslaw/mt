@@ -27,13 +27,12 @@ typedef struct {
   CallFrame frames[FRAMES_MAX];
   int frameCount;
 
-  const char* scriptName;
-  const char* currentScriptName;
-
   Value stack[STACK_MAX];
   Value *stackTop;
+
   Table globals;
   Table strings;
+  Table imports;
 
   ObjString* initString; // used to initialise functions
   ObjUpvalue* openUpvalues;

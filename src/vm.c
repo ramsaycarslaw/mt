@@ -64,19 +64,16 @@ static void defineNative(const char *name, NativeFn function) {
   pop();
 }
 
-void initVM(const char* scriptName) {
+void initVM() {
   resetStack();
   vm.objects = NULL;
 
-  vm.scriptName = scriptName;
-  vm.currentScriptName = scriptName;
-
   initTable(&vm.strings);
   initTable(&vm.globals);
+  initTable(&vm.imports);
 
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
-
 
   /* Modules */
   createAssertModule();
@@ -345,10 +342,21 @@ static ObjectModule* createModule(ObjString* relativePath)
 /* Update an object module to actuallu import something */
 static bool importModule(const char* path) 
 {  
+  // TODO non-relative paths
   const char *src = readFile(path);
   /*if (interpretModule(src) == INTERPRET_RUNTIME_ERROR) {
     return false;
   }*/
+
+  Value value;
+  ObjString *import = copyString(path, strlen(path));
+
+  if (!tableGet(&vm.imports, import, &value)) {
+    tableSet(&vm.imports, import, value);
+  } else {
+    // we have already imported this code
+    return true;
+  }
 
   ObjFunction* function = compile(src);
 
