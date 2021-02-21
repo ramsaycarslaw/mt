@@ -41,172 +41,20 @@ make uninstall
 
 You can call mt in REPL mode like:
 ```
-./mt
+mt
 ```
 
 Or pass in a file with:
 ```
-./mt path/to/file
+mt path/to/file
 ```
 
 Alternatively, you can copy the mt executable to /usr/local/bin/ to make it available system wide.
 
-## Simple Examples
 
-### 1. Hello World
-Hello world can be done in two ways, imperatively or as a function (best practice).
-```
-// imperative
-print "Hello, World!";
-```
-```
-fn main() 
-{
-    print "Hello, World!";
-}
+## Examples
 
-main();
-```
-### 2. Read a file
-Reading a file can be done with the builtin read() function
-```
-var src = read("main.mt");
-
-print src;
-```
-
-### 3. Writing to a file
-Writing to a file is similar to reading a file
-```
-var ok = write("hello.txt", "Hello, World!");
-
-if (ok == 1) 
-{
-    print "Couldn't read file";
-}
-```
-
-### 4. Working with strings
-You can add two strings together with the plus operator
-```
-var str1 = "Hello, ";
-var str2 = str1 + "World!";
-print str2;
-```
-### 5. Working with time
-You can use the system clock to profile the execution of functions
-```
-var start = clock();
-someFunction();
-var elapsed = clock() - start;
-print elapsed;
-```
-### 6. Boolean Values
-Boolean values are as you would expect
-```
-var b1 = true;
-var b2 = false;
-print !(b1 && b2 || !b1)
-```
-### 7. if/else 
-
-The preferred mt style is to put the braces on a new line
-```
-var temp = 30;
-
-if (temp < 16) 
-{
-    print "chilly";
-} 
-else if (temp < 28) 
-{
-    print "perfect";
-}
-else
-{
-    print "too hot";
-}
-```
-
-### 8. while loops
-While loops have c-style syntax
-```
-while (x < 10) 
-{
-    print x;
-    x = x + 1;
-}
-```
-### 9. for loops
-For loops also use c-style syntax
-```
-for (var i = 0; i < 10; i = i + 1) 
-{
-    print i;
-}
-```
-
-### 10. functions
-Functions are most similar to python in their declaration
-```
-fn fib(n) 
-{
-    if (n <= 1) 
-    {
-        return n;
-    }
-    return fib(n-1) + fib(n-2);
-}
-```
-
-### 11. Classes and Objects
-
-Classes are defined slightly differently to most languages
-```
-
-class Person 
-{
-  init(name, age) 
-  {
-    this.name = name;
-    this.age = age;
-  }
-
-  speak() 
-  {
-    print "Hello, I am " + this.name;
-  }
-
-  sayage() 
-  {
-    print "I am " + string(age) + " years old";
-  }
-}
-
-var bob = Person("Bob", 20);
-bob.speak();
-bob.sayage();
-bob.age = 21;
-bob.sayage();
-
-```
-
-### 12. Importing Code
-Lets say you have a file called `hello.mt` with the following code in it:
-```
-fn sayHello(name) 
-{
-  print "Hello " + name;
-}
-```
-A second file `main.mt` can use the code in `hello.mt` as such
-```
-use "hello.mt";
-
-sayHello("Bob");
-```
-
-***NOTE*** --- There is NO protection from infinite import loops - be careful! Also make sure the files are in the same folder, if they are not put the absolute path to the file in the string
+See the [docs](https://github.com/ramsaycarslaw/mt/docs/example.md)
 
 
 ## Advanced Examples
@@ -297,7 +145,8 @@ print c.getRadius();
 | <                 | less than                                    |
 | >                 | greater than                                 |
 | &&                | boolean and                                  |
-| ||               | boolean or
+| ?:                | ternary operator                             |
+| \|\|                   | Boolean or                                   |
 
 #### Keywords
 
@@ -310,6 +159,12 @@ print c.getRadius();
 | var                                | declare a new variable to nil               |
 | print                              | prints the following statement              |
 | fn *name*(*args*)                  | declare a function                          |
+| use "path/to/file";                | import code from the path specified         |
+| switch (condition)                 | switch case statement                       |
+| case *expression*:                 | switch case option                          |
+| default:                           | default value of switch case                |
+| break                              | leave a loop early                          |
+| continue                           | skip  to next loop cycle                    |
 
 #### Built In functions
 | Function                          | Effect                                       |
@@ -319,9 +174,28 @@ print c.getRadius();
 | write(*path*, *text*) -> *number* | writes text to file at path returns 0 if ok  |
 | number(*value*) -> *number*       | changes any type to a number                 |
 | string(*value*) -> *string*       | changes numbers and bools to string literals |
-| raw()                             | Raw puts the shell in raw mode               |
 | sleep(n)                          | Sleep for n seconds                          |
 | println(s) & printf(s)            | works like C's printf                        |
+
+#### Modules
+
+##### http:
+
+The `http` module is how mt will commincate with websites and servers.
+
+| Function                 | Effect                                               |
+| -----------              | -----------                                          |
+| http.Get(hostname, port) | Get the html file from hostname, optionally set port |
+
+##### assert
+
+The assert module is used for type checking and safety, all of the functions will create a runtime error if their conditions are not met. You can use them to be sure of the values you are recieving. 
+
+| Function               | Effect                     |
+| ---------------------  | ------------------         |
+| assert.True(vals...)   | check some values are true |
+| assert.False(vals...)  | check values are false     |
+| assert.Equals(vals...) | check values are equal     |
 
 ## ToDo
 > In no particular order

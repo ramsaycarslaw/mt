@@ -344,9 +344,6 @@ static bool importModule(const char* path)
 {  
   // TODO non-relative paths
   const char *src = readFile(path);
-  /*if (interpretModule(src) == INTERPRET_RUNTIME_ERROR) {
-    return false;
-  }*/
 
   Value value;
   ObjString *import = copyString(path, strlen(path));
@@ -366,13 +363,7 @@ static bool importModule(const char* path)
     return false;
   }
 
-  // TODO 
-  // 1. Make a Table called modules
-  // 2. if exists in modules, dont import
-  // 3. if doent set key
-
   push(OBJ_VAL(function));
-  //printValue(OBJ_VAL(function));
 
   ObjClosure *closure = newClosure(function);
   pop();
