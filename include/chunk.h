@@ -52,6 +52,7 @@ typedef enum
     OP_POW,      // ^
     OP_MOD,      // %
     OP_RETURN,   // return
+    OP_DEFER,    // defer
     OP_CLASS,
     OP_INHERIT,
     OP_METHOD

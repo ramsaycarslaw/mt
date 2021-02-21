@@ -73,7 +73,7 @@ static void runFile(const char* path)
 /* Main loop that handles all the command line arguments and such */
 int main(int argc, char *argv[])
 {
-	initVM();
+	initVM(argv[1]);
 
 	if (argc == 1)
 	{

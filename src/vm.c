@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../include/common.h"
 #include "../include/compiler.h"
@@ -64,13 +65,15 @@ static void defineNative(const char *name, NativeFn function) {
   pop();
 }
 
-void initVM() {
+void initVM(const char* filePath) {
   resetStack();
   vm.objects = NULL;
 
   initTable(&vm.strings);
   initTable(&vm.globals);
   initTable(&vm.imports);
+
+  vm.fileName = filePath;
 
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
@@ -342,11 +345,27 @@ static ObjectModule* createModule(ObjString* relativePath)
 /* Update an object module to actuallu import something */
 static bool importModule(const char* path) 
 {  
-  // TODO non-relative paths
-  const char *src = readFile(path);
+  /* Get the index of the last '/' char */
+  int lastsep = -1;
+  for (int i = 0; i < strlen(vm.fileName); i++) {
+   if (vm.fileName[i] == '/')
+    lastsep = i; 
+  }
+
+  char fullPath[4096];
+
+  /* get the relative path */
+  if (lastsep == -1) {
+   strcpy(fullPath, path); 
+  } else {
+    strncpy(fullPath, vm.fileName, lastsep+1);
+    fullPath[lastsep+1] = '\0';
+    strncat(fullPath, path, strlen(path));
+  }
 
   Value value;
-  ObjString *import = copyString(path, strlen(path));
+  ObjString *import = copyString(fullPath, strlen(fullPath));
+  char *src = readFile(fullPath);
 
   if (!tableGet(&vm.imports, import, &value)) {
     tableSet(&vm.imports, import, value);
@@ -375,7 +394,7 @@ static bool importModule(const char* path)
 
 static int run() {
   CallFrame *frame = &vm.frames[vm.frameCount - 1];
-#define READ_BYTE() (*frame->ip++) // method to get the next byte
+#define READ_BYTE() (*frame->ip++)      // method to get the next byte
 #define READ_CONSTANT()                                                        \
   (frame->closure->function->chunk.constants.values[READ_BYTE()])
 #define READ_SHORT()                                                           \
@@ -913,8 +932,24 @@ static int run() {
       break;
     }
 
+    // Defer from function
+    case OP_DEFER: {
+      Value expr = pop(); 
+      frame->closure->function->deferValues[frame->closure->function->deferCount] = expr;
+      frame->closure->function->deferCount++;
+
+      frame = &vm.frames[vm.frameCount - 1];
+      // push(expr);
+      break;
+    }
+
     case OP_RETURN: {
       Value result = pop();
+
+      // handle defer statements
+      int len = frame->closure->function->deferCount; 
+      for (int i = 0; i < len; i++)
+        push(frame->closure->function->deferValues[i]);
 
       closeUpvalues(frame->slots);
 

@@ -169,9 +169,31 @@ static TokenType identifierType()
       }     
       break;    
     } 
-    case 'd': return checkKeyword(1, 6, "efault", TOKEN_DEFAULT);
+    case 'd': 
+      if (scanner.current - scanner.start > 1) {
+        switch (scanner.start[1]) {
+          case 'e':
+            switch(scanner.start[2]) {
+              case 'f':
+                switch (scanner.start[3]) {
+                  case 'e': return checkKeyword(4, 1, "r", TOKEN_DEFER);
+                  case 'a': return checkKeyword(4, 3, "ult", TOKEN_DEFAULT);
+                }
+            }
+            break;
+        }
+        break;
+      }
     case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
-    case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
+    case 'i': 
+      if (scanner.current - scanner.start > 1) {
+        switch (scanner.start[1]) {
+          case 'f':
+            return TOKEN_IF;
+          case 'n':
+            return TOKEN_IN;
+        }
+      }
     case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
     case '|': return checkKeyword(1, 1, "|", TOKEN_OR); // or
     case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);

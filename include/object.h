@@ -6,6 +6,8 @@
 #include "table.h"
 #include "chunk.h"
 
+#define DEFER_MAX 1024
+
 #define OBJ_TYPE(value)    (AS_OBJ(value)->type)
 
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
@@ -57,6 +59,8 @@ typedef struct
     Obj obj;
     int arity;
     int upvalueCount;
+    Value deferValues[DEFER_MAX];
+    int deferCount;
     Chunk chunk;
     ObjString* name;
 } ObjFunction;

@@ -1,4 +1,4 @@
 // This file tests how well use staements handle duplicate imports
 use "otherfile.mt";
 
-print add(40, 2);
+assert.True(add(40, 2), 42);

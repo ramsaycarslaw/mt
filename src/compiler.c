@@ -761,6 +761,7 @@ ParseRule rules[] = {
   [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
   [TOKEN_USE] = {NULL, NULL, PREC_NONE},
   [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
+  [TOKEN_DEFER] = {NULL, NULL, PREC_NONE},
   [TOKEN_SUPER]  = {super_, NULL, PREC_NONE},
   [TOKEN_THIS] = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
@@ -1121,6 +1122,25 @@ static void expressionStatement() {
   emitByte(OP_POP);
 }
 
+/* Compile a for in statement */
+static void forInStatement() 
+{
+
+  consume(TOKEN_LEFT_PAREN, "Expected '(' after for loop.");
+
+  /* "for" "(" [var | expr] "in" expr ")" "{"  */
+
+  consume(TOKEN_IN, "Expected 'in' keyword.");
+
+  expression();
+
+  consume(TOKEN_RIGHT_PAREN, "Expected ')' after 'for-in' statement");
+
+  statement();
+
+  endScope();
+}
+
 /* Compiles a for statement */
 static void forStatement() {
   beginScope();
@@ -1290,6 +1310,16 @@ static void returnStatement() {
   }
 }
 
+/* Compile a defer statement */
+static void deferStatement() {
+  if (current->type == TYPE_SCRIPT) {
+    error("Cannot call 'defer' from top level code");
+  }
+  expression();
+  consume(TOKEN_SEMICOLON, "Expected ';' after return value.");
+  emitByte(OP_DEFER);
+}
+
 /* Compile a while statemnt */
 static void whileStatement() {
 	int surroundingStart = loopStart;
@@ -1369,6 +1399,8 @@ static void statement() {
 		continueStatement();
 	} else if (match(TOKEN_PRINT)) {
     printStatement();
+  } else if (match(TOKEN_DEFER)) {
+    deferStatement();
   } else if (match(TOKEN_FOR)) {
     forStatement();
   } else if (match(TOKEN_IF)) {
