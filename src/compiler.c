@@ -104,7 +104,7 @@ BreakJump *breakJumps = NULL;
 Parser parser;
 static uint8_t identifierConstant(Token *name);
 
-static void lambdaExpression();
+static void lambdaExpression(bool canAssign);
 
 /* This line may be redundant */
 Compiler *current = NULL;

@@ -5,4 +5,5 @@
 Contents
 --------
 
+[Use Statements](./use.md)
 [Lambda Expressions](./lambda.md)
