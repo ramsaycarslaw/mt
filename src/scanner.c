@@ -299,6 +299,7 @@ Token scanToken()
     case ',': return makeToken(TOKEN_COMMA);
     case ':': return makeToken(TOKEN_COLON);
     case '?': return makeToken(TOKEN_QUESTION);
+    case '\\': return makeToken(TOKEN_BACKSLASH);
     case '.': {
       if (match('.')) {
         // used in list comprehensions
@@ -309,6 +310,8 @@ Token scanToken()
     case '-': 
       if (match('=')) {
         return makeToken(TOKEN_MINUS_EQUALS);
+      } else if (match('>')) {
+        return makeToken(TOKEN_RIGHT_ARROW);
       }
       return makeToken(TOKEN_MINUS);
     case '+':  {

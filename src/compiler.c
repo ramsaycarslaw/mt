@@ -63,6 +63,7 @@ typedef struct {
 
 /* implicit main fn or actual fn */
 typedef enum {
+  TYPE_LAMBDA,
   TYPE_FUNCTION,
   TYPE_INITIALIZER,
   TYPE_SCRIPT,
@@ -102,6 +103,8 @@ BreakJump *breakJumps = NULL;
 /* Global parser struct */
 Parser parser;
 static uint8_t identifierConstant(Token *name);
+
+static void lambdaExpression();
 
 /* This line may be redundant */
 Compiler *current = NULL;
@@ -730,12 +733,7 @@ ParseRule rules[] = {
   [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
   [TOKEN_BANG] = {unary, NULL, PREC_NONE},
   [TOKEN_PLUS_EQUALS] = {NULL, binary, PREC_NONE},
-  [TOKEN_PLUS_PLUS] =
-  {
-    unary,
-    increment,
-    PREC_NONE,
-  },
+  [TOKEN_PLUS_PLUS] = { unary, increment, PREC_NONE,},
   [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_EQUALITY},
   [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
   [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
@@ -754,6 +752,7 @@ ParseRule rules[] = {
   [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
   [TOKEN_IF] = {NULL, NULL, PREC_NONE},
   [TOKEN_SWITCH] = {NULL, NULL, PREC_NONE}, // handle switch statements
+  [TOKEN_BACKSLASH] = {lambdaExpression, NULL, PREC_NONE}, // lambda expression
   [TOKEN_CASE] = {NULL, NULL, PREC_NONE},
   [TOKEN_DEFAULT] = {NULL, NULL, PREC_NONE},
   [TOKEN_NIL] = {literal, NULL, PREC_NONE},
@@ -963,6 +962,40 @@ static void function(FunctionType type) {
     emitByte(compiler.upvalues[i].index);
   }
 }
+
+/* Compile a lamda expression */
+static void lambdaExpression(bool canAssign) {
+  Compiler compiler;
+  initCompiler(&compiler, TYPE_LAMBDA);
+  beginScope();
+
+  /* If we don't find an arrow they must want arguments */
+  if (!check(TOKEN_RIGHT_ARROW)) {  
+    do {
+      current->function->arity++;
+      if (current->function->arity > 255) {
+        errorAtCurrent("Cannot have more than 255 parameters.");
+      }
+
+      uint8_t paramConstant = parseVariable("Expected variable name");
+      defineVariable(paramConstant);
+    } while (match(TOKEN_COMMA));
+  }
+  consume(TOKEN_RIGHT_ARROW, "Expected '->' after lambda expression.");
+
+  consume(TOKEN_LEFT_BRACE, "Expected '{' after lambda's '->'.");
+    block();
+  /* creare function object representation */
+  ObjFunction *function = endCompiler();
+  emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+
+  /* Handle closures and upvalues */
+  for (int i = 0; i < function->upvalueCount; i++) {
+    emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+    emitByte(compiler.upvalues[i].index);
+  }
+}
+
 
 static void method() {
   consume(TOKEN_IDENTIFIER, "Expected method name.");
