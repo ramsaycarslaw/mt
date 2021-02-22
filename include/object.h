@@ -59,8 +59,6 @@ typedef struct
     Obj obj;
     int arity;
     int upvalueCount;
-    Value deferValues[DEFER_MAX];
-    int deferCount;
     Chunk chunk;
     ObjString* name;
 } ObjFunction;

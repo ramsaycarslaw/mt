@@ -41,6 +41,12 @@ echo -e "${PURPLE}"
 echo "-------------- Haskell  --------------"
 time runghc fib.hs
 
+
+echo -e "${RED}"
+echo "-------------- Java  --------------"
+javac fib.java
+time java fib
+
 echo -e "${BLUE}"
 echo "----------------- mt ------------------"
 time mt fib.mt 
@@ -52,6 +58,13 @@ time python3 fib.py
 echo -e "${RED}"
 echo "-------------- Python 2  --------------"
 time python2 fib.py 
+
+
+echo -e "${BLUE}"
+echo "-------------- R ------------------"
+time Rscript fib.R
+
+
 
 echo -e "${ORANGE}"
 echo "-------------- Rust  ------------------"

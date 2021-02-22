@@ -1,7 +1,11 @@
 var test = "";
 
+fn afterFn() {
+  test = "after";
+}
+
 fn main() {
-  defer test="after";
+  defer afterFn;
 
   test = "before";
 

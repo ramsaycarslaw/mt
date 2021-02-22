@@ -82,6 +82,7 @@ void initVM(const char* filePath) {
   createAssertModule();
   createHttpModule();
   createLogModule();
+  createErrorsModule();
 
   /* System */
   defineNative("clock", clockNative);
@@ -935,21 +936,13 @@ static int run() {
     // Defer from function
     case OP_DEFER: {
       Value expr = pop(); 
-      frame->closure->function->deferValues[frame->closure->function->deferCount] = expr;
-      frame->closure->function->deferCount++;
-
-      frame = &vm.frames[vm.frameCount - 1];
-      // push(expr);
+      push(expr);
       break;
     }
 
     case OP_RETURN: {
       Value result = pop();
 
-      // handle defer statements
-      int len = frame->closure->function->deferCount; 
-      for (int i = 0; i < len; i++)
-        push(frame->closure->function->deferValues[i]);
 
       closeUpvalues(frame->slots);
 
@@ -962,7 +955,8 @@ static int run() {
       vm.stackTop = frame->slots;
       push(result);
 
-      frame = &vm.frames[vm.frameCount - 1];
+      frame = &vm.frames[vm.frameCount - 1]; 
+
       break;
     }
 

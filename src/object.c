@@ -135,6 +135,7 @@ ObjClosure* newClosure(ObjFunction* function)
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
+
     return closure;
 }
 
@@ -146,7 +147,6 @@ ObjFunction* newFunction()
     function->arity = 0;
     function->upvalueCount = 0;
     function->name = NULL;
-    function->deferCount = 0;
     initChunk(&function->chunk);
     return function;
 }
