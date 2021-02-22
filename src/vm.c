@@ -375,7 +375,7 @@ static bool importModule(const char* path)
     return true;
   }
 
-  ObjFunction* function = compile(src);
+  ObjFunction* function = compile(src, false);
 
   if (function == NULL) 
   {
@@ -1002,7 +1002,7 @@ static int run() {
 
 InterpretResult interpretModule(const char *source) 
 {  
-  ObjFunction *function = compile(source);
+  ObjFunction *function = compile(source, false);
   if (function == NULL)
     return INTERPRET_COMPILE_ERROR;
 
@@ -1019,10 +1019,9 @@ InterpretResult interpretModule(const char *source)
 
 InterpretResult interpret(const char *source) 
 {  
-  ObjFunction *function = compile(source);
+  ObjFunction *function = compile(source, false);
   if (function == NULL)
     return INTERPRET_COMPILE_ERROR;
-
 
   push(OBJ_VAL(function));
 

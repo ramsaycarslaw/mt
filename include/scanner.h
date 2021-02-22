@@ -38,6 +38,7 @@ typedef struct
 {
 	TokenType type;
 	const char *start;
+  const char *line_chars;
 	int length;
 	int line;
 } Token;

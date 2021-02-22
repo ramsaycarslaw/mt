@@ -93,6 +93,28 @@ static Value assertEqualNative(int argCount, Value *args)
   return NIL_VAL;
 }
 
+static Value assertNumber(int argCount, Value *args) 
+{
+  if (argCount == 0) {
+    runtimeError("Expected at least one argument to 'assert.Number'.");
+    return NIL_VAL;
+  }
+
+  int result = 1;
+
+  for (int i = 0; i < argCount; i++) {
+    result = result && IS_NUMBER(args[i]);
+  }
+    
+  if (!result) 
+  {
+    runtimeError("Could not assert all values to be numberss");
+    return NIL_VAL;
+  }
+
+  return NIL_VAL;
+}
+
 
 /* Finally we create the module */
 void createAssertModule() 
@@ -108,6 +130,7 @@ void createAssertModule()
   defineModuleMethod(klass, "True", assertIsTrue);
   defineModuleMethod(klass, "False", assertIsFalse);
   defineModuleMethod(klass, "Equals", assertEqualNative);
+  defineModuleMethod(klass, "Number", assertNumber);
 
 
   tableSet(&vm.globals, name, OBJ_VAL(klass));

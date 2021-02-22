@@ -1454,7 +1454,7 @@ static void statement() {
 }
 
 /* Compile is the main function used to create bytecode */
-ObjFunction *compile(const char *src) {
+ObjFunction *compile(const char *src, bool andRun) {
   initScanner(src);
   Compiler compiler;
   initCompiler(&compiler, TYPE_SCRIPT);

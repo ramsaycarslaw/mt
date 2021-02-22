@@ -5,5 +5,7 @@
 Contents
 --------
 
-[Use Statements](./use.md)
-[Lambda Expressions](./lambda.md)
+1. [The Ternary Operator](./ternary.md)
+2. [Type Assertion & Error Handling](./types.md)
+3. [Use Statements](./use.md)
+4. [Lambda Expressions](./lambda.md)

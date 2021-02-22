@@ -73,6 +73,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
       return simpleInstruction("OP_NIL", offset);
     case OP_BUILD_LIST:
       return simpleInstruction("OP_BUILD_LIST", offset);
+    case OP_DEFER:
+      return simpleInstruction("OP_DEFER", offset);
     case OP_GENERATE_LIST:
       return simpleInstruction("OP_GENERATE_LIST", offset);
     case OP_TRUE:

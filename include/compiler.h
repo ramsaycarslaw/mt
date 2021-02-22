@@ -3,6 +3,6 @@
 
 #include "vm.h"
 
-ObjFunction* compile(const char * src);
+ObjFunction* compile(const char * src, bool andRun);
 
 #endif
