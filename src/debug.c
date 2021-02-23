@@ -115,6 +115,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
       return simpleInstruction("OP_NOT", offset);
     case OP_POW:
       return simpleInstruction("OP_POW", offset);
+    case OP_RANGE:
+      return simpleInstruction("OP_RANGE", offset);
     case OP_MOD:
       return simpleInstruction("OP_MOD", offset);
     case OP_NEGATE:

@@ -848,6 +848,26 @@ static int run() {
       push(OBJ_VAL(list));
       break;
     }
+
+    case OP_RANGE: {
+      ObjList *list = newList();
+      // Value min = pop();
+      uint8_t itemCount = 10;
+
+      push(OBJ_VAL(list));
+
+      for (int i = itemCount; i >=0; i--) {
+        appendToList(list, NUMBER_VAL(i));
+      }
+      pop();
+
+      while (itemCount --> 0) {
+        pop();
+      }
+
+      push(OBJ_VAL(list));
+      break;
+    }
     
     case OP_GENERATE_LIST: {
       ObjList *list = newList();                       

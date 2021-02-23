@@ -7,55 +7,56 @@
 /* All possible types of opcode */
 typedef enum
 {
-    OP_CONSTANT, // a number
-    OP_IMPORT,
-    OP_NIL,
-    OP_TRUE,
-    OP_FALSE,
-    OP_POP,      // used for expressions
-    OP_GET_LOCAL,// get value of local varible
-    OP_SET_LOCAL,// set the value of local variable
-    OP_GET_GLOBAL,
-    OP_DEFINE_GLOBAL,
-    OP_SET_GLOBAL,
-    OP_GET_UPVALUE,
-    OP_SET_UPVALUE,
-    OP_SET_PROPERTY,
-    OP_GET_SUPER,
-    OP_GET_PROPERTY,
+    OP_ADD,      // +
     OP_BUILD_LIST, // []
-    OP_GENERATE_LIST,
-    OP_INDEX_SUBSCR, // [n]
-    OP_STORE_SUBSCR, // [n] = n
+    OP_CALL,
+    OP_CLASS,
+    OP_CLOSE_UPVALUE,
+    OP_CLOSURE,
+    OP_CONSTANT, // a number
+    OP_COPY,
+    OP_DEFER,    // defer
+    OP_DEFINE_GLOBAL,
+    OP_DIVIDE,   // /
     OP_EQUAL,
+    OP_FALSE,
+    OP_GENERATE_LIST,
+    OP_GET_GLOBAL,
+    OP_GET_LOCAL,// get value of local varible
+    OP_GET_PROPERTY,
+    OP_GET_SUPER,
+    OP_GET_UPVALUE,
     OP_GREATER,
-    OP_LESS,
-    OP_NEGATE,   // -number
+    OP_IMPORT,
     OP_INCR,     // ++
-    OP_PRINT,
-    OP_USE,
-    OP_USE_ALL,
+    OP_INDEX_SUBSCR, // [n]
+    OP_INHERIT,
+    OP_INVOKE,
     OP_JUMP,
     OP_JUMP_IF_FALSE,
+    OP_LESS,
     OP_LOOP,
-    OP_CALL,
-    OP_COPY,
-    OP_INVOKE,
-    OP_SUPER_INVOKE,
-    OP_CLOSURE,
-    OP_CLOSE_UPVALUE,
-    OP_ADD,      // +
-    OP_SUBTRACT, // -
-    OP_MULTIPLY, // *
-    OP_DIVIDE,   // /
-    OP_NOT,
-    OP_POW,      // ^
+    OP_METHOD,
     OP_MOD,      // %
+    OP_MULTIPLY, // *
+    OP_NEGATE,   // -number
+    OP_NIL,
+    OP_NOT,
+    OP_POP,      // used for expressions
+    OP_POW,      // ^
+    OP_PRINT,
+    OP_RANGE,    // range 0..n
     OP_RETURN,   // return
-    OP_DEFER,    // defer
-    OP_CLASS,
-    OP_INHERIT,
-    OP_METHOD
+    OP_SET_GLOBAL,
+    OP_SET_LOCAL,// set the value of local variable
+    OP_SET_PROPERTY,
+    OP_SET_UPVALUE,
+    OP_STORE_SUBSCR, // [n] = n
+    OP_SUBTRACT, // -
+    OP_SUPER_INVOKE,
+    OP_TRUE,
+    OP_USE,
+    OP_USE_ALL,
 } OpCode;
 
 /* Byte code chunk definition: wrapper for dynamic array */

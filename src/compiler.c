@@ -23,6 +23,8 @@ typedef struct {
 typedef enum {
   PREC_NONE,
   PREC_ASSIGNMENT, // =
+  PREC_RANGE,
+  PREC_CONDITIONAL,
   PREC_OR,         // or
   PREC_AND,        // and
   PREC_EQUALITY,   // == !=
@@ -104,6 +106,7 @@ BreakJump *breakJumps = NULL;
 Parser parser;
 static uint8_t identifierConstant(Token *name);
 
+static void rangeExpr(bool canAssign);
 static void lambdaExpression(bool canAssign);
 
 /* This line may be redundant */
@@ -185,7 +188,12 @@ static bool match(TokenType type) {
 
 /* Append a single byte to be translated to bytecode */
 static void emitByte(uint8_t byte) {
+#ifdef MT_OUT_STREAM
+  // TODO Replace this with actual symbol
+  printf("%u\n", byte);
+#else
   writeChunk(currentChunk(), byte, parser.current.line);
+#endif
 }
 
 /* emits 16 bits worth of data by calling emit twice */
@@ -402,6 +410,9 @@ static void binary(bool canAssign) {
     case TOKEN_PLUS:
       emitByte(OP_ADD);
       break;
+    case TOKEN_DOT_DOT:
+      emitByte(OP_RANGE);
+      break;
     case TOKEN_MINUS:
       emitByte(OP_SUBTRACT);
       break;
@@ -500,15 +511,6 @@ static void list(bool canAssign) {
 
   // check for empty list
   if (!check(TOKEN_RIGHT_BRACKET)) {
-
-    if (match(TOKEN_DOT_DOT)) {
-      emitByte(OP_GENERATE_LIST);
-      advance();
-      number(canAssign);
-      consume(TOKEN_RIGHT_BRACKET, "Expected ']' after list.");
-      return;
-    }
-
     do {
       if (check(TOKEN_RIGHT_BRACKET)) {
         // Trailing comma case
@@ -715,61 +717,62 @@ static void increment(bool canAssign)
 
 /* Stores infomation on how to parse tokens */
 ParseRule rules[] = {
-  [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
-  [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
-  [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
-  [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
-  [TOKEN_LEFT_BRACKET] = {list, subscript, PREC_SUBSCRIPT},
-  [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
-  [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
-  [TOKEN_DOT] = {NULL, dot, PREC_CALL},
-  [TOKEN_QUESTION] = {NULL, ternary, PREC_OR},
-  [TOKEN_MINUS] = {unary, binary, PREC_TERM},
-  [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
-  [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
-  [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
-  [TOKEN_CARAT] = {NULL, binary, PREC_FACTOR},
-  [TOKEN_PERCENT] = {NULL, binary, PREC_FACTOR},
-  [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
+	[TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
+	[TOKEN_CONTINUE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_AND] = {NULL, and_, PREC_AND},
+  [TOKEN_BACKSLASH] = {lambdaExpression, NULL, PREC_NONE}, // lambda expression
   [TOKEN_BANG] = {unary, NULL, PREC_NONE},
-  [TOKEN_PLUS_EQUALS] = {NULL, binary, PREC_NONE},
-  [TOKEN_PLUS_PLUS] = { unary, increment, PREC_NONE,},
   [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_EQUALITY},
+  [TOKEN_CARAT] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_CASE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
+  [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
+  [TOKEN_DEFAULT] = {NULL, NULL, PREC_NONE},
+  [TOKEN_DEFER] = {NULL, NULL, PREC_NONE},
+  [TOKEN_DOT] = {NULL, dot, PREC_CALL},
+  [TOKEN_DOT_DOT] = {NULL, rangeExpr, PREC_RANGE},
+  [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
   [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
   [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
-  [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
-  [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
-  [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
-  [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
-  [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
-  [TOKEN_STRING] = {string, NULL, PREC_NONE},
-  [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
-  [TOKEN_AND] = {NULL, and_, PREC_AND},
-  [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
-  [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
   [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
   [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
   [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
+  [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
   [TOKEN_IF] = {NULL, NULL, PREC_NONE},
-  [TOKEN_SWITCH] = {NULL, NULL, PREC_NONE}, // handle switch statements
-  [TOKEN_BACKSLASH] = {lambdaExpression, NULL, PREC_NONE}, // lambda expression
-  [TOKEN_CASE] = {NULL, NULL, PREC_NONE},
-  [TOKEN_DEFAULT] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LEFT_BRACKET] = {list, subscript, PREC_SUBSCRIPT},
+  [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
+  [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
+  [TOKEN_MINUS] = {unary, binary, PREC_TERM},
   [TOKEN_NIL] = {literal, NULL, PREC_NONE},
+  [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
   [TOKEN_OR] = {NULL, or_, PREC_OR},
+  [TOKEN_PERCENT] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
+  [TOKEN_PLUS_EQUALS] = {NULL, binary, PREC_NONE},
+  [TOKEN_PLUS_PLUS] = { unary, increment, PREC_NONE,},
   [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
-  [TOKEN_USE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_QUESTION] = {NULL, ternary, PREC_OR},
   [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
-  [TOKEN_DEFER] = {NULL, NULL, PREC_NONE},
+  [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
+  [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
+  [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
+  [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
+  [TOKEN_STRING] = {string, NULL, PREC_NONE},
   [TOKEN_SUPER]  = {super_, NULL, PREC_NONE},
+  [TOKEN_SWITCH] = {NULL, NULL, PREC_NONE}, // handle switch statements
   [TOKEN_THIS] = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
+  [TOKEN_USE] = {NULL, NULL, PREC_NONE},
   [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
-	[TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
-	[TOKEN_CONTINUE] = {NULL, NULL, PREC_NONE},
   [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
-  [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
-  [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
 /* Stops expression() from consuming too much */
@@ -961,6 +964,14 @@ static void function(FunctionType type) {
     emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
     emitByte(compiler.upvalues[i].index);
   }
+}
+
+/* Compile a range expression 0..n */
+static void rangeExpr(bool canAssign) {
+  emitByte(OP_RANGE);
+
+  parsePrecedence(PREC_CONDITIONAL);
+  return;
 }
 
 /* Compile a lamda expression */

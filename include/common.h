@@ -8,6 +8,8 @@
 //#define MT_DEBUG_PRINT_CODE // print return chunks
 //#define MT_DEBUG_TRACE_EXEC // if on will print stuff for 'pro' users
 
+// #define MT_OUT_STREAM
+
 /* Compile with graphics library */
 #define MT_GRAPHICS
 
