@@ -194,6 +194,7 @@ static TokenType identifierType()
             return TOKEN_IN;
         }
       }
+    case 'l': return checkKeyword(1, 2, "et", TOKEN_LET);  // let x: type = type_inst;
     case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
     case '|': return checkKeyword(1, 1, "|", TOKEN_OR); // or
     case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);

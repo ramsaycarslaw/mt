@@ -802,6 +802,7 @@ ParseRule rules[] = {
   [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
   [TOKEN_USE] = {NULL, NULL, PREC_NONE},
   [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LET] = {NULL, NULL, PREC_NONE},
   [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
 };
 
@@ -1050,8 +1051,7 @@ static void method() {
 
   FunctionType type = TYPE_METHOD;
 
-  if (parser.previous.length == 4 &&
-      memcmp(parser.previous.start, "init", 4) == 0) {
+  if (parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0) {
     type = TYPE_INITIALIZER;
   }
 
@@ -1133,7 +1133,21 @@ static void varDeclaration() {
   } else {
     emitByte(OP_NIL); /* variables are nil by default */
   }
-  consume(TOKEN_SEMICOLON, "xpected ';' after variable declaration.");
+  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
+
+  defineVariable(global);
+}
+
+/* Compile a statically typed let declaration */
+static void letDeclaration() {
+  uint8_t global = parseVariable("Expected variable name.");
+
+  if (match(TOKEN_EQUAL)) {
+    expression();
+  } else {
+    emitByte(OP_NIL); /* variables are nil by default */
+  }
+  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
 
   defineVariable(global);
 }
@@ -1243,6 +1257,8 @@ static void forStatement() {
       /* No initialiser */
     } else if (match(TOKEN_VAR)) {
       varDeclaration();
+    } else if (match(TOKEN_LET)) { 
+      letDeclaration();    
     } else {
       expressionStatement();
     }
@@ -1452,6 +1468,7 @@ static void synchronize() {
       case TOKEN_CLASS:
       case TOKEN_FUN:
       case TOKEN_VAR:
+      case TOKEN_LET:
       case TOKEN_FOR:
       case TOKEN_IF:
       case TOKEN_USE:
@@ -1476,6 +1493,8 @@ static void declaration() {
     funDeclaration();
   } else if (match(TOKEN_VAR)) {
     varDeclaration();
+  } else if (match(TOKEN_LET)) {
+    letDeclaration();
   } else {
     statement();
   }

@@ -197,7 +197,9 @@ The assert module is used for type checking and safety, all of the functions wil
 | assert.False(vals...)  | check values are false     |
 | assert.Equals(vals...) | check values are equal     |
 
-## Planned features
+
+Planned features
+-----------------
 
 The order of theses could change
 
@@ -216,10 +218,18 @@ for x in 0..10 {
 }
 ```
 
-3. Tuples 
+3. Asynchronous Function Exectution (corountines)
+
 ```
-var tuple = ("hello", "world");
+async add(x, y) { return x+y; }
 ```
+
+4. Optional Static Typing
+
+```
+let x: number = 10;
+```
+
 
 ## ToDo
 > In no particular order

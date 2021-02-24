@@ -1,27 +1,27 @@
-class Foo {
-    
-    init() {
-        print "Hello from Foo!";
-    }
-    
+class Foo {    
+  notInit() {
+    print "Not Innit";
+  }
 }
 
-class Bar < Foo {
-    
-    init() {
-        super.init();
-        print "Hello from Bar!";
-    }
-    
-}
+Foo().notInit();
 
-class Quux < Bar {
-    
-    init() {
-        super.init();
-        print "Hello from Quux!";
-    }
-    
-}
-
-Quux();
+//class Bar < Foo {
+//    
+//    init() {
+//        super.init();
+//        print "Hello from Bar!";
+//    }
+//    
+//}
+//
+//class Quux < Bar {
+//    
+//    init() {
+//        super.init();
+//        print "Hello from Quux!";
+//    }
+//    
+//}
+//
+//Quux();
