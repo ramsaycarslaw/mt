@@ -195,7 +195,14 @@ static TokenType identifierType()
         }
       }
     case 'l': return checkKeyword(1, 2, "et", TOKEN_LET);  // let x: type = type_inst;
-    case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
+    case 'n': 
+      if (scanner.current - scanner.start > 1) {
+        switch (scanner.start[1]) {
+          case 'i': return checkKeyword(2, 1, "l", TOKEN_NIL);
+          case '6': return checkKeyword(2, 1, "4", TOKEN_N64);
+        }
+        break;
+      }
     case '|': return checkKeyword(1, 1, "|", TOKEN_OR); // or
     case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);
     case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
@@ -204,6 +211,7 @@ static TokenType identifierType()
         switch (scanner.start[1]) {
           case 'u': return checkKeyword(2, 3, "per", TOKEN_SUPER);
           case 'w': return checkKeyword(2, 4, "itch", TOKEN_SWITCH);
+          case 't': return checkKeyword(2, 1, "r", TOKEN_STR);
         }
         break;
       }

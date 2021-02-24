@@ -1142,14 +1142,55 @@ static void varDeclaration() {
 static void letDeclaration() {
   uint8_t global = parseVariable("Expected variable name.");
 
-  if (match(TOKEN_EQUAL)) {
-    expression();
-  } else {
-    emitByte(OP_NIL); /* variables are nil by default */
-  }
-  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
+  if (!match(TOKEN_COLON)) {
+    if (match(TOKEN_EQUAL)) {
+      expression();
+    } else {
+      emitByte(OP_NIL); /* variables are nil by default */
+    }
+    consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
 
-  defineVariable(global);
+    defineVariable(global);
+  } 
+  else 
+  {
+    // Numbers
+    if (match(TOKEN_N64)) {
+      if (match(TOKEN_EQUAL)) 
+      {
+        advance();
+        number(true);
+      } 
+      else 
+      {
+        // zero value
+        emitConstant(NUMBER_VAL(0));
+      }
+      consume(TOKEN_SEMICOLON, "Expected semicolon after 'let' declaration.");
+
+      defineVariable(global);
+    } 
+    // Strings
+    else if (match(TOKEN_STR)) 
+    {
+      if (match(TOKEN_EQUAL)) 
+      {
+        advance();
+        string(true);
+      } 
+      else 
+      {
+        emitConstant(OBJ_VAL(copyString("", 0)));
+      }
+      consume(TOKEN_SEMICOLON, "Expected semicolon after 'let' declaration.");
+
+      defineVariable(global);
+    } 
+    else 
+    {
+      error("Could not resolve type.");
+    }
+  }
 }
 
 /* Compile a use statement */
