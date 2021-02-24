@@ -58,6 +58,8 @@ typedef enum
     OP_SUBTRACT, // -
     OP_SUPER_INVOKE,
     OP_TRUE,
+    OP_TYPE_ASSIGNMENT_ERROR,
+    OP_TYPE_SET,
     OP_USE,
     OP_USE_ALL,
 } OpCode;

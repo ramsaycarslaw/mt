@@ -918,6 +918,17 @@ static void defineVariable(uint8_t global) {
   emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
+/* TODO finish this */
+static void defineTypedVariable(uint8_t global, Type type) {
+  if (current->scopeDepth > 0) {
+    markInitialised();
+    return;
+  }
+
+  emitBytes(OP_TYPE_SET, type);
+  emitByte(global);
+}
+
 /* gets the list of arguments from function call */
 static uint8_t argumentList() {
   uint8_t argCount = 0;
@@ -1154,42 +1165,26 @@ static void letDeclaration() {
   } 
   else 
   {
-    // Numbers
+    Type type = NO_TYPE;
+
     if (match(TOKEN_N64)) {
-      if (match(TOKEN_EQUAL)) 
-      {
-        advance();
-        number(true);
-      } 
-      else 
-      {
-        // zero value
-        emitConstant(NUMBER_VAL(0));
-      }
-      consume(TOKEN_SEMICOLON, "Expected semicolon after 'let' declaration.");
-
-      defineVariable(global);
-    } 
-    // Strings
-    else if (match(TOKEN_STR)) 
-    {
-      if (match(TOKEN_EQUAL)) 
-      {
-        advance();
-        string(true);
-      } 
-      else 
-      {
-        emitConstant(OBJ_VAL(copyString("", 0)));
-      }
-      consume(TOKEN_SEMICOLON, "Expected semicolon after 'let' declaration.");
-
-      defineVariable(global);
-    } 
-    else 
-    {
-      error("Could not resolve type.");
+      type = NUMBER_TYPE;
+    } else if (match(TOKEN_STR)) {
+      type = STRING_TYPE;
+    } else {
+      error("Could not resolve type of 'let'.");
     }
+    advance();
+
+    if (!match(TOKEN_EQUAL)) {
+      expression();
+    } else {
+      emitByte(OP_NIL);
+    }
+
+    consume(TOKEN_SEMICOLON, "Expected ';' after let declartation.");
+
+    defineTypedVariable(global, type);
   }
 }
 

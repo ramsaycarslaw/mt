@@ -84,6 +84,7 @@ void initVM(const char* filePath) {
   createHttpModule();
   createLogModule();
   createErrorsModule();
+  createSortsModule();
 
   /* System */
   defineNative("clock", clockNative);
@@ -449,6 +450,11 @@ static int run() {
       pop();
       break;
 
+    case OP_TYPE_ASSIGNMENT_ERROR: {
+      runtimeError("Error, initlised type varible with the wrong type or no value.");
+      return INTERPRET_RUNTIME_ERROR;
+    }
+
     case OP_GET_LOCAL: {
       uint8_t slot = READ_BYTE();
       push(frame->slots[slot]);
@@ -477,6 +483,23 @@ static int run() {
       ObjString *name = READ_STRING();
       tableSet(&vm.globals, name, peek(0));
       pop();
+      break;
+    }
+
+    case OP_TYPE_SET: {
+      printf("var: %f\n", AS_NUMBER(peek(0)));
+      printf("type: %f\n", AS_NUMBER(peek(1)));
+      printf("type: %f\n", AS_NUMBER(peek(2)));
+      if (AS_NUMBER(peek(0)) == NUMBER_TYPE && IS_NUMBER(peek(1))) {
+        pop();
+        ObjString* name = READ_STRING();
+        tableSet(&vm.globals, name, peek(0));
+        pop();
+        break;
+      } else {
+        runtimeError("Could assign variable of type to number.");
+        return INTERPRET_RUNTIME_ERROR;
+      }     
       break;
     }
 

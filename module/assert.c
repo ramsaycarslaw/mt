@@ -115,6 +115,28 @@ static Value assertNumber(int argCount, Value *args)
   return NIL_VAL;
 }
 
+// assert.String(x,y,z,a,b,c);
+static Value assertString(int argCount, Value *args) 
+{
+  if (argCount == 0) {
+    runtimeError("Expected at least one argument to 'assert.String'");
+    return NIL_VAL;
+  }
+
+  bool result = true;
+
+  for (int i = 0; i < argCount; i++) {
+    result = result && IS_STRING(args[i]);
+  }
+
+  if (!result) {
+    runtimeError("Could not assert all the values to be strings.");
+    return NIL_VAL;
+  }
+
+  return NIL_VAL;
+}
+
 
 /* Finally we create the module */
 void createAssertModule() 
@@ -131,6 +153,7 @@ void createAssertModule()
   defineModuleMethod(klass, "False", assertIsFalse);
   defineModuleMethod(klass, "Equals", assertEqualNative);
   defineModuleMethod(klass, "Number", assertNumber);
+  defineModuleMethod(klass, "String", assertString);
 
 
   tableSet(&vm.globals, name, OBJ_VAL(klass));
