@@ -13,6 +13,7 @@
 #include "../include/object.h"
 #include "../include/vm.h"
 #include "../include/preproc.h"
+#include "../include/iterator.h"
 
 
 /* Maybe take a pointer later to remove the global variable */
@@ -565,7 +566,34 @@ static int run() {
         double b = AS_NUMBER(pop());
         double a = AS_NUMBER(pop());
         push(NUMBER_VAL(a + b));
-      } else if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) {
+
+      } 
+      else if (IS_TUPLE(peek(0)) && IS_TUPLE(peek(1)))  
+      {
+        // Join two tuples
+        ObjTuple* b = AS_TUPLE(pop()); 
+        ObjTuple* a = AS_TUPLE(pop());
+
+        for (int i = 0; i < b->count; i++) {
+          appendToTuple(a, b->items[i]);
+        }
+
+        push(OBJ_VAL(a));
+
+      } 
+      else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) 
+      {
+        // Join two lists
+        ObjList* b = AS_LIST(pop());
+        ObjList* a = AS_LIST(pop());
+
+        for (int i = 0;  i < b->count; i++)
+          appendToList(a, b->items[i]);
+        
+        push(OBJ_VAL(a));
+      }
+      else if (IS_LIST(peek(0)) && IS_NUMBER(peek(1))) 
+      {
         ObjList *list = AS_LIST(pop());
         double b = AS_NUMBER(pop());
 
@@ -849,6 +877,25 @@ static int run() {
       break;
     }
 
+    case OP_BUILD_TUPLE: 
+    {
+      ObjTuple *tuple = newTuple();
+      uint8_t itemCount = READ_BYTE();
+
+      push(OBJ_VAL(tuple));
+      for (int i = itemCount; i > 0; i--) {
+        appendToTuple(tuple, peek(i));
+      }
+      pop();
+
+      while (itemCount --> 0) {
+        pop();
+      }
+
+      push(OBJ_VAL(tuple));
+      break;
+    }
+
     case OP_RANGE: {
       ObjList *list = newList();
       // Value min = pop();
@@ -885,6 +932,51 @@ static int run() {
       break;
     }
 
+    case OP_FOR_ITERATOR: 
+    {
+      uint16_t offset = READ_SHORT();
+
+      ObjectIterator* iterator = AS_ITERATOR(pop());
+
+      if (reachedEnd(iterator)) {
+        frame->ip += offset;
+      } 
+      else 
+      {
+        // this works
+        push(valueFromIterable(iterator));
+        advanceIterator(iterator);
+        push(OBJ_VAL(iterator));
+      }
+      break;
+    }
+
+    case OP_ITERATOR: 
+    {
+      Value obj = pop();
+      if (!IS_OBJ(obj)) {
+        runtimeError("Primative values are not iterable.");
+      }
+
+      Obj* object = AS_OBJ(obj);
+
+      switch (object->type) 
+      {
+        case OBJ_LIST: 
+        {
+          ObjectIterator* iter = newIterator();  
+          iter->list = AS_LIST(obj);
+          iter->iter = 0;
+          push(OBJ_VAL(iter));
+          break;
+        }
+        default:
+          runtimeError("Object '%s' is not iterable", AS_CSTRING(obj));
+          break;
+      }
+      break;
+    }
+
     case OP_INDEX_SUBSCR: {
       Value index = pop();
       Value indexable = pop();
@@ -911,6 +1003,18 @@ static int run() {
           return INTERPRET_RUNTIME_ERROR;
         }
         result = indexFromString(string, AS_NUMBER(index));
+      } else if (IS_TUPLE(indexable)) {
+        ObjTuple *tuple = AS_TUPLE(indexable); 
+
+        if (!IS_NUMBER(index)) {
+          runtimeError("Tuple index must be a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        } else if (!isValidTupleIndex(tuple, AS_NUMBER(index))) {
+          runtimeError("Tuple index out of range.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        result = indexFromTuple(tuple, AS_NUMBER(index));
+
       } else {
         runtimeError("Object is not indexable");
         return INTERPRET_RUNTIME_ERROR;

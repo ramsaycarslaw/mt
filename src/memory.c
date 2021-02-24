@@ -3,6 +3,7 @@
 
 #include "../include/memory.h"
 #include "../include/vm.h"
+#include "../include/iterator.h"
 
 /* 
 reallocate is the main function used by mt for many 
@@ -64,6 +65,18 @@ static void freeObject(Obj* object)
     {
         FREE(ObjList, object);
         break;
+    }
+
+    case OBJ_TUPLE: 
+    {
+      FREE(ObjTuple, object);
+      break;
+    }
+
+    case OBJ_ITERATOR: 
+    {
+      FREE(ObjectIterator, object);
+      break;
     }
 
     case OBJ_CLASS: 

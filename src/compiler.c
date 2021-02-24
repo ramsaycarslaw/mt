@@ -177,6 +177,12 @@ static void consume(TokenType type, const char *message) {
   errorAtCurrent(message);
 }
 
+/* Create an empty token */
+Token tokenEmpty()
+{
+    return (Token) { .type = TOKEN_NONE, .start = NULL, .length = 0, .line = 0 };
+}
+
 static bool check(TokenType type) { return parser.current.type == type; }
 
 static bool match(TokenType type) {
@@ -410,9 +416,6 @@ static void binary(bool canAssign) {
     case TOKEN_PLUS:
       emitByte(OP_ADD);
       break;
-    case TOKEN_DOT_DOT:
-      emitByte(OP_RANGE);
-      break;
     case TOKEN_MINUS:
       emitByte(OP_SUBTRACT);
       break;
@@ -477,6 +480,33 @@ static void literal(bool canAssign) {
 /* Check the grouping of parenthesis */
 static void grouping(bool canAssign) {
   expression();
+
+  if (match(TOKEN_COMMA)) 
+  {
+    int itemCount=1; 
+    do 
+    {
+      if (check(TOKEN_RIGHT_PAREN)) 
+      {
+        // trailing comma
+        break;
+      }
+
+      parsePrecedence(PREC_OR);
+
+      if (itemCount == UINT8_COUNT) {
+        error("Cannot have more than 256 items in a tuple literal.");
+      }
+      itemCount++;
+    } while (match(TOKEN_COMMA));
+
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' after tuple declaration");
+    // TODO make op build tuple
+    emitByte(OP_BUILD_TUPLE);
+    emitByte(itemCount);
+    return;
+  }
+
   consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
 }
 
@@ -968,9 +998,15 @@ static void function(FunctionType type) {
 
 /* Compile a range expression 0..n */
 static void rangeExpr(bool canAssign) {
-  emitByte(OP_RANGE);
+  expression();
+  emitByte(OP_POP);
 
-  parsePrecedence(PREC_CONDITIONAL);
+  for (int i = 0; i < 10; i++) {
+    emitConstant(NUMBER_VAL(i));
+  }
+
+  emitByte(OP_BUILD_LIST);
+  emitConstant(NUMBER_VAL(10));
   return;
 }
 
@@ -1166,82 +1202,95 @@ static void expressionStatement() {
   emitByte(OP_POP);
 }
 
-/* Compile a for in statement */
-static void forInStatement() 
-{
-
-  consume(TOKEN_LEFT_PAREN, "Expected '(' after for loop.");
-
-  /* "for" "(" [var | expr] "in" expr ")" "{"  */
-
-  consume(TOKEN_IN, "Expected 'in' keyword.");
-
-  expression();
-
-  consume(TOKEN_RIGHT_PAREN, "Expected ')' after 'for-in' statement");
-
-  statement();
-
-  endScope();
-}
 
 /* Compiles a for statement */
 static void forStatement() {
-  beginScope();
 
-  consume(TOKEN_LEFT_PAREN, "Expected '(' after 'for'.");
+  // consume(TOKEN_LEFT_PAREN, "Expected '(' after 'for'.");  
+  /* FOR IN statement */
+  if (!match(TOKEN_LEFT_PAREN)) {
 
-  if (match(TOKEN_SEMICOLON)) {
-    /* No initialiser */
-  } else if (match(TOKEN_VAR)) {
-    varDeclaration();
-  } else {
-    expressionStatement();
-  }
+    beginScope();
+    advance();
+    Token target = parser.previous;
 
-  // int loopStart = currentChunk()->count;
-	int surroundingStart = loopStart;
-	int surroundingDepth = loopDepth;
-	loopStart = currentChunk()->count;
-	loopDepth = current->scopeDepth;
+    declareVariable();
+    markInitialised();
 
-  int exitJump = -1;
-  if (!match(TOKEN_SEMICOLON)) {
+    consume(TOKEN_IN, "Expected 'in' after variable.");
+
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after loop condition.");
+    emitByte(OP_ITERATOR);
+    addLocal(tokenEmpty());
+    markInitialised();
+    
+    loopStart = currentChunk()->count;
+    int exitJump = emitJump(OP_FOR_ITERATOR);
 
-    exitJump = emitJump(OP_JUMP_IF_FALSE);
+    namedVariable(target, false);
     emitByte(OP_POP);
-  }
 
-  if (!match(TOKEN_RIGHT_PAREN)) {
-    int bodyJump = emitJump(OP_JUMP);
-
-    int incrementStart = currentChunk()->count;
-    expression();
-    emitByte(OP_POP);
-    consume(TOKEN_RIGHT_PAREN, "Expected ')' after for clauses.");
+    statement();
 
     emitLoop(loopStart);
-    loopStart = incrementStart;
-    patchJump(bodyJump);
-  }
-
-  statement();
-
-  emitLoop(loopStart);
-
-  if (exitJump != -1) {
     patchJump(exitJump);
     emitByte(OP_POP);
+    endScope();
+  } else {
+    beginScope();
+    /* FOR STATEMENT */
+    if (match(TOKEN_SEMICOLON)) {
+      /* No initialiser */
+    } else if (match(TOKEN_VAR)) {
+      varDeclaration();
+    } else {
+      expressionStatement();
+    }
+
+    // int loopStart = currentChunk()->count;
+    int surroundingStart = loopStart;
+    int surroundingDepth = loopDepth;
+    loopStart = currentChunk()->count;
+    loopDepth = current->scopeDepth;
+
+    int exitJump = -1;
+    if (!match(TOKEN_SEMICOLON)) {
+      expression();
+      consume(TOKEN_SEMICOLON, "Expected ';' after loop condition.");
+
+      exitJump = emitJump(OP_JUMP_IF_FALSE);
+      emitByte(OP_POP);
+    }
+
+    if (!match(TOKEN_RIGHT_PAREN)) {
+      int bodyJump = emitJump(OP_JUMP);
+
+      int incrementStart = currentChunk()->count;
+      expression();
+      emitByte(OP_POP);
+      consume(TOKEN_RIGHT_PAREN, "Expected ')' after for clauses.");
+
+      emitLoop(loopStart);
+      loopStart = incrementStart;
+      patchJump(bodyJump);
+    }
+
+    statement();
+
+    emitLoop(loopStart);
+
+    if (exitJump != -1) {
+      patchJump(exitJump);
+      emitByte(OP_POP);
+    }
+
+    patchBreakJumps();
+
+    loopStart = surroundingStart;
+    loopDepth = surroundingDepth;
+
+    endScope();
   }
-
-	patchBreakJumps();
-
-	loopStart = surroundingStart;
-	loopDepth = surroundingDepth;
-
-  endScope();
 }
 
 /* Compiles an if statement */
@@ -1266,55 +1315,55 @@ static void ifStatement() {
 
 /* Compile a switch statement */
 static void switchStatement() {
-	consume(TOKEN_LEFT_PAREN, "Expect '(' after 'switch'");
-	expression();
-	consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression");
-	consume(TOKEN_LEFT_BRACE, "Expect '{' before switch cases.");
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after 'switch'");
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression");
+  consume(TOKEN_LEFT_BRACE, "Expect '{' before switch cases.");
 
-	int state = 0;
-	int cases[500];
-	int case_count = 0;
-	int case_ = -1;
+  int state = 0;
+  int cases[500];
+  int case_count = 0;
+  int case_ = -1;
 
-	while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
-		if (match(TOKEN_CASE) || match(TOKEN_DEFAULT)) {
-			TokenType caseType = parser.previous.type;
+  while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+    if (match(TOKEN_CASE) || match(TOKEN_DEFAULT)) {
+      TokenType caseType = parser.previous.type;
 
-			if (state == 2) {
-				error("Can't have another case or default after the default case.");
-			}
+      if (state == 2) {
+        error("Can't have another case or default after the default case.");
+      }
 
-			if (state == 1) {
-				cases[case_count++] = emitJump(OP_JUMP);
-				patchJump(case_);
-				emitByte(OP_POP);
-			}
+      if (state == 1) {
+        cases[case_count++] = emitJump(OP_JUMP);
+        patchJump(case_);
+        emitByte(OP_POP);
+      }
 
-			if (caseType == TOKEN_CASE) {
-				state = 1;
+      if (caseType == TOKEN_CASE) {
+        state = 1;
 
-				emitByte(OP_COPY);
-				expression();
+        emitByte(OP_COPY);
+        expression();
 
-				consume(TOKEN_COLON, "Expected ':' after case value.");
-				beginScope();
+        consume(TOKEN_COLON, "Expected ':' after case value.");
+        beginScope();
 
-				emitByte(OP_EQUAL);
-				case_ = emitJump(OP_JUMP_IF_FALSE);
-				emitByte(OP_POP);
-				endScope();
-			} else {
-				state = 2;
-				consume(TOKEN_COLON, "Expected ':' after 'default'.");
-				case_ = -1;
-			}
-		} else {
-			if (state == 0) {
-				error("Can't have statements before any case.");
-			}
-			statement();
-		}
-	}
+        emitByte(OP_EQUAL);
+        case_ = emitJump(OP_JUMP_IF_FALSE);
+        emitByte(OP_POP);
+        endScope();
+      } else {
+        state = 2;
+        consume(TOKEN_COLON, "Expected ':' after 'default'.");
+        case_ = -1;
+      }
+    } else {
+      if (state == 0) {
+        error("Can't have statements before any case.");
+      }
+      statement();
+    }
+  }
 
   if (state == 1) 
   {
@@ -1366,10 +1415,10 @@ static void deferStatement() {
 
 /* Compile a while statemnt */
 static void whileStatement() {
-	int surroundingStart = loopStart;
-	int surroundingDepth = loopDepth;
-	loopStart = currentChunk()->count;
-	loopDepth = current->scopeDepth;
+  int surroundingStart = loopStart;
+  int surroundingDepth = loopDepth;
+  loopStart = currentChunk()->count;
+  loopDepth = current->scopeDepth;
 
   consume(TOKEN_LEFT_PAREN, "Expected '(' after 'while'.");
   expression();
@@ -1385,10 +1434,10 @@ static void whileStatement() {
   patchJump(exitJump);
   emitByte(OP_POP);
 
-	patchBreakJumps();
+  patchBreakJumps();
 
-	loopStart = surroundingStart;
-	loopDepth = surroundingDepth;
+  loopStart = surroundingStart;
+  loopDepth = surroundingDepth;
 }
 
 /* Basic error recovery */
@@ -1437,11 +1486,11 @@ static void declaration() {
 
 /* Parse a generic stateent */
 static void statement() {
-	if (match(TOKEN_BREAK)) {
-		breakStatement();
-	} else if (match(TOKEN_CONTINUE)) {
-		continueStatement();
-	} else if (match(TOKEN_PRINT)) {
+  if (match(TOKEN_BREAK)) {
+    breakStatement();
+  } else if (match(TOKEN_CONTINUE)) {
+    continueStatement();
+  } else if (match(TOKEN_PRINT)) {
     printStatement();
   } else if (match(TOKEN_DEFER)) {
     deferStatement();

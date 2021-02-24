@@ -44,6 +44,13 @@ else
   testPass "defer" 1
 fi
 
+# lambda
+if [[ $(mt lambda/lambda.mt) ]]; then
+  testFail "lambda"
+else
+  testPass "lambda" 1
+fi
+
 # return
 if [[ $(mt return/return.mt) ]]; then
  testFail "return"
@@ -63,6 +70,6 @@ fi
 if [[ $(mt use/use.mt) ]]; then
  testFail "use"
 else
- testPass "use" 3
+ testPass "use" 4
 fi 
 

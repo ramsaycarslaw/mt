@@ -425,5 +425,10 @@ Value lenNative(int argCount, Value *args) {
   if (IS_LIST(args[0])) {
     return NUMBER_VAL(AS_LIST(args[0])->count);
   }
+
+  if (IS_TUPLE(args[0])) {
+    return NUMBER_VAL(AS_TUPLE(args[0])->count);
+  }
+
   return NUMBER_VAL(strlen(AS_CSTRING(args[0])));
 }

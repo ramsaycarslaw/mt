@@ -9,6 +9,7 @@ typedef enum
 {
     OP_ADD,      // +
     OP_BUILD_LIST, // []
+    OP_BUILD_TUPLE, // ()
     OP_CALL,
     OP_CLASS,
     OP_CLOSE_UPVALUE,
@@ -20,6 +21,7 @@ typedef enum
     OP_DIVIDE,   // /
     OP_EQUAL,
     OP_FALSE,
+    OP_FOR_ITERATOR,
     OP_GENERATE_LIST,
     OP_GET_GLOBAL,
     OP_GET_LOCAL,// get value of local varible
@@ -28,6 +30,7 @@ typedef enum
     OP_GET_UPVALUE,
     OP_GREATER,
     OP_IMPORT,
+    OP_ITERATOR,
     OP_INCR,     // ++
     OP_INDEX_SUBSCR, // [n]
     OP_INHERIT,

@@ -19,6 +19,7 @@
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE(value)   isObjType(value, OBJ_NATIVE)
 #define IS_LIST(value)     isObjType(value, OBJ_LIST)
+#define IS_TUPLE(value)     isObjType(value, OBJ_TUPLE)
 #define IS_MODULE(value)   isObjType(value, OBJ_VALUE)
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
@@ -31,6 +32,7 @@
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
+#define AS_TUPLE(value)          ((ObjTuple*)AS_OBJ(value))
 #define AS_MODULE(value)        ((ObjectModule*)AS_OBJ(value))
 
 typedef enum
@@ -44,8 +46,10 @@ typedef enum
     OBJ_NATIVE,
     OBJ_STRING,
     OBJ_LIST,
+    OBJ_TUPLE,
     OBJ_UPVALUE,
     OBJ_MODULE,
+    OBJ_ITERATOR,
 } ObjType;
 
 struct sObj
@@ -141,6 +145,15 @@ typedef struct
     Value* items;
 } ObjList;
 
+/* Immutable, ordered lists */
+typedef struct 
+{
+  Obj obj;
+  int count;
+  int capacity;
+  Value* items;
+} ObjTuple;
+
 /* Used for importing code */
 typedef struct 
 {
@@ -151,11 +164,15 @@ typedef struct
 } ObjectModule;
 
 ObjList* newList();
+ObjTuple* newTuple();
 void appendToList(ObjList* list, Value value);
+void appendToTuple(ObjTuple* tuple, Value value);
 void storeToList(ObjList* list, int index, Value value);
 Value indexFromList(ObjList* list, int index);
+Value indexFromTuple(ObjTuple* tuple, int index);
 void deleteFromList(ObjList* list, int index);
 bool isValidListIndex(ObjList* list, int index);
+bool isValidTupleIndex(ObjTuple* tuple, int index);
 bool isValidStringIndex(ObjString* string, int index);
 Value indexFromString(ObjString* string, int index);
 ObjBoundMethod* newBoundMethod(Value reciever, ObjClosure* method);

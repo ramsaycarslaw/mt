@@ -197,6 +197,30 @@ The assert module is used for type checking and safety, all of the functions wil
 | assert.False(vals...)  | check values are false     |
 | assert.Equals(vals...) | check values are equal     |
 
+## Planned features
+
+The order of theses could change
+
+1. For in loops
+
+```
+for x in y {
+  print y;
+}
+```
+
+2. range operator
+```
+for x in 0..10 {
+  print x;  
+}
+```
+
+3. Tuples 
+```
+var tuple = ("hello", "world");
+```
+
 ## ToDo
 > In no particular order
 - [ ] Garbage Collector
@@ -208,8 +232,9 @@ The assert module is used for type checking and safety, all of the functions wil
 - [ ] Standard libary
     - [ ] std linear algebra
     - [ ] std string manip
-    - [ ] std network
+    - [ ] std network (in progress)
     - [ ] std I/O
+    - [ ] std assert (in progress)
 
 
 

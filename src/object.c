@@ -62,6 +62,15 @@ ObjList* newList()
     return list;
 }
 
+ObjTuple* newTuple() 
+{
+  ObjTuple* tuple = ALLOCATE_OBJ(ObjTuple, OBJ_TUPLE);
+  tuple->items = NULL;
+  tuple->count = 0;
+  tuple->capacity = 0;
+  return tuple;
+}
+
 /* Add a new value to the list */
 void appendToList(ObjList* list, Value value) 
 {
@@ -77,6 +86,24 @@ void appendToList(ObjList* list, Value value)
     return;
 }
 
+
+/* Although tuples are immuatable we still need this method
+ * to create them in the first place. To ensure immutablility t
+ * this is never exposed to the user */
+void appendToTuple(ObjTuple* tuple, Value value) 
+{
+    if (tuple->capacity < tuple->count + 1) 
+    {
+        int oldCapacity = tuple->capacity;
+        tuple->capacity = GROW_CAPACITY(oldCapacity);
+        tuple->items = (Value*)reallocate(tuple->items, sizeof(Value)*oldCapacity, sizeof(Value)*tuple->capacity);
+    }
+
+    tuple->items[tuple->count] = value;
+    tuple->count++;
+    return;
+}
+
 /* Adds a value to s given place in a list */
 void storeToList(ObjList* list, int index, Value value) 
 {
@@ -87,6 +114,11 @@ void storeToList(ObjList* list, int index, Value value)
 Value indexFromList(ObjList* list, int index) 
 {
     return list->items[index];
+}
+
+Value indexFromTuple(ObjTuple* tuple, int index) 
+{
+  return tuple->items[index];
 }
 
 /* Deletes an item from list */
@@ -108,6 +140,16 @@ bool isValidListIndex(ObjList* list, int index)
         return false;
     }
     return true;
+}
+
+/* Check valid tuple index */
+bool isValidTupleIndex(ObjTuple* tuple, int index) 
+{
+  if (index < 0 || index > tuple->count - 1) 
+  {
+    return false;
+  }
+  return true;
 }
 
 bool isValidStringIndex(ObjString* string, int index) {
@@ -305,6 +347,23 @@ static void printList(ObjList* list)
     printf("]");
 }
 
+/* Print a list object */
+static void printTuple(ObjTuple* tuple) 
+{
+    printf("(");
+    for (int i = 0; i < tuple->count - 1; i++) 
+    {
+        printValue(tuple->items[i]);
+        printf(", ");
+    }
+    if (tuple->count != 0) 
+    {
+        printValue(tuple->items[tuple->count - 1]);
+    }
+    printf(")");
+}
+
+
 void printObject(Value value)
 {
     switch (OBJ_TYPE(value))
@@ -342,5 +401,12 @@ void printObject(Value value)
     case OBJ_LIST:
         printList(AS_LIST(value));
         break;
+    case OBJ_TUPLE:
+        printTuple(AS_TUPLE(value));
+        break;
+    case OBJ_ITERATOR:
+        printf("<iterator>");
+        break;
+    default: break;
 	}
 }
