@@ -1,0 +1,10 @@
+Typed Variables in MT
+--------------------
+
+we write the varibel type to a global table i.e
+
+hash(name) = type
+
+at runtime we check if the varibale is typed.
+If it is we can skip any IS_NUMBER calls etc
+and we can throw errors ad bad types

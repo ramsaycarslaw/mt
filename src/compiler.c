@@ -1270,6 +1270,7 @@ static void forStatement() {
     consume(TOKEN_IN, "Expected 'in' after variable.");
 
     expression();
+
     emitByte(OP_ITERATOR);
     addLocal(tokenEmpty());
     markInitialised();
@@ -1284,7 +1285,6 @@ static void forStatement() {
 
     emitLoop(loopStart);
     patchJump(exitJump);
-    emitByte(OP_POP);
     endScope();
   } else {
     beginScope();
