@@ -4,5 +4,6 @@
 *.aux
 *.out
 .DS_STORE
+pkg
 mt
 
