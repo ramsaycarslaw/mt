@@ -12,6 +12,7 @@
 #include "../module/errors.h"
 #include "../module/sorts.h"
 #include "../module/math.h"
+#include "../module/strings.h"
 
 #define FRAMES_MAX 1024
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)

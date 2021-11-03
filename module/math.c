@@ -3,6 +3,36 @@
 
 // --------------------------- OPERATIONS ---------------------------------
 
+// native range method
+static Value rangeNative(int argCount, Value* args) {
+  if (argCount < 2) {
+    runtimeError("wrong number of arguments to 'Range'");
+  }
+
+  if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+    runtimeError("arguments to 'Range' must be numbers");
+  }
+
+  int start = AS_NUMBER(args[0]);
+  int end = AS_NUMBER(args[1]);
+  int step = 1;
+
+  if (argCount == 3) {
+    if (!IS_NUMBER(args[2])) {
+      runtimeError("third argument to 'Range' must be a number");
+    }
+    step = AS_NUMBER(args[2]);
+  }
+
+  ObjList* result = newList();
+
+  for (int i = start; i <= end; i += step) {
+    appendToList(result, NUMBER_VAL(i));
+  }
+
+  return OBJ_VAL(result);
+}
+
 // factorial method
 static Value factorial(int argCount, Value *args) 
 {
@@ -202,6 +232,7 @@ void createMathModule()
   defineModuleMethod(klass, "Pow", powNative);
   defineModuleMethod(klass, "Sqrt", sqrtNative);
   defineModuleMethod(klass, "Abs", absNative);
+  defineModuleMethod(klass, "Range", rangeNative);
 
   tableSet(&vm.globals, name, OBJ_VAL(klass));
   pop();
