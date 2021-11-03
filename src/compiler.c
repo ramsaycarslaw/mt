@@ -925,8 +925,8 @@ static void defineTypedVariable(uint8_t global, Type type) {
     return;
   }
 
-  emitBytes(OP_TYPE_SET, type);
   emitByte(global);
+  emitBytes(OP_TYPE_SET, type);
 }
 
 /* gets the list of arguments from function call */

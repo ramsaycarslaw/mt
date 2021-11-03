@@ -37,11 +37,6 @@ char *mt_readline(void)
     // Read a character
     c = getchar();
 
-    if (c ==  '\x1b') 
-    {
-        printf("Escape detected\n");
-    }
-
     // If we hit EOF, replace it with a null character and return.
     if (c == EOF || c == '\n') {
       buffer[position] = '\0';

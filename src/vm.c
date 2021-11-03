@@ -85,6 +85,7 @@ void initVM(const char* filePath) {
   createLogModule();
   createErrorsModule();
   createSortsModule();
+  createMathModule();
 
   /* System */
   defineNative("clock", clockNative);
@@ -1164,6 +1165,7 @@ InterpretResult interpretModule(const char *source)
 }
 
 
+// Main Interpret function, creates a main object
 InterpretResult interpret(const char *source) 
 {  
   ObjFunction *function = compile(source, false);
