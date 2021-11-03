@@ -87,6 +87,7 @@ void initVM(const char* filePath) {
   createSortsModule();
   createMathModule();
   createStringsModule();
+  createArraysModule();
 
   /* System */
   defineNative("clock", clockNative);

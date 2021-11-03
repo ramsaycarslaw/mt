@@ -278,6 +278,23 @@ static Value splitNative(int argCount, Value* args) {
   return OBJ_VAL(result);
 }
 
+// native toString method
+static Value toStringNative(int argCount, Value* args) {
+  if (argCount != 1) {
+    runtimeError("wrong number of arguments to 'ToString'");
+  }
+
+  if (!IS_NUMBER(args[0])) {
+    runtimeError("argument to 'ToString' must be a number");
+  }
+
+  char buffer[32];
+  snprintf(buffer, 32, "%g", AS_NUMBER(args[0]));
+
+  return OBJ_VAL(copyString(buffer, strlen(buffer)));
+}
+
+
 void createStringsModule() {
   ObjString* name = copyString("strings", 7);
   push(OBJ_VAL(name));
@@ -295,6 +312,7 @@ void createStringsModule() {
   defineModuleMethod(klass, "Upper", toUpperNative);
   defineModuleMethod(klass, "Trim", trimNative);
   defineModuleMethod(klass, "Split", splitNative);
+  defineModuleMethod(klass, "ToString", toStringNative);
 
   tableSet(&vm.globals, name, OBJ_VAL(klass));
   pop();
