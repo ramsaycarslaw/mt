@@ -2,6 +2,7 @@
 #define mt_module_sorts
 
 #include "modules.h"
+#include "../include/vm.h"
 
 void createSortsModule();
 
